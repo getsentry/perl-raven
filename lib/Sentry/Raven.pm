@@ -120,7 +120,7 @@ sub _post_event {
     if ($response->code() == HTTP_OK) {
         return $event->{event_id};
     } else {
-        return undef;
+        return;
     }
 }
 
