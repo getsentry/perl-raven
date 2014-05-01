@@ -4,7 +4,11 @@ lib/Sentry/Raven.pm
 Makefile.PL
 MANIFEST
 README
-t/00_load.t
-t/10_dsn.t
-t/11_generic_event.t
-t/12_specialized_event.t
+t/00-load.t
+t/10-dsn.t
+t/11-generic-event.t
+t/12-specialized-event.t
+t/13-service-call.t
+t/14-does-not-die.t
+t/15-implements-recommended-api.t
+t/16-has-documentation.t

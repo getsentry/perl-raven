@@ -3,4 +3,4 @@ use warnings;
 
 use Test::More tests => 1;
 
-BEGIN { use_ok( 'Sentry::Raven' ); }
+use_ok( 'Sentry::Raven' );

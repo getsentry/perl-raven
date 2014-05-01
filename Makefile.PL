@@ -1,8 +1,8 @@
 use ExtUtils::MakeMaker;
 
-WriteMakefile(
-    NAME            => 'Sentry::Raven',
-    PREREQ_PM       => {
+WriteMakefile1(
+    NAME                => 'Sentry::Raven',
+    PREREQ_PM           => {
         'DateTime'          => 0,
         'HTTP::Request'     => 0,
         'HTTP::Status'      => 0,
@@ -13,10 +13,38 @@ WriteMakefile(
         'URI'               => 0,
         'UUID::Tiny'        => 0,
     },
-    # TEST_REQUIRES   => {
-    #     'HTTP::Response'        => 0,
-    #     'Test::LWP::UserAgent'  => 0,
-    #     'Test::More'            => 0,
-    # },
-    VERSION_FROM    => 'lib/Sentry/Raven.pm',
+    TEST_REQUIRES       => {
+        'HTTP::Response'        => 0,
+        'Test::LWP::UserAgent'  => 0,
+        'Test::More'            => 0,
+    },
+    VERSION_FROM        => 'lib/Sentry/Raven.pm',
+    MIN_PERL_VERSION    => '5.008',
 );
+
+
+sub WriteMakefile1 {   # Cribbed from eumm-upgrade by Alexandr Ciornii
+  my %params = @_;
+  my $eumm_version = $ExtUtils::MakeMaker::VERSION;
+  $eumm_version = eval $eumm_version;
+
+  if ($params{TEST_REQUIRES} and $eumm_version < 6.6303) {
+      $params{BUILD_REQUIRES}={ %{$params{BUILD_REQUIRES} || {}} , %{$params{TEST_REQUIRES}} };
+      delete $params{TEST_REQUIRES};
+  }
+  if ($params{BUILD_REQUIRES} and $eumm_version < 6.5503) {
+      #EUMM 6.5502 has problems with BUILD_REQUIRES
+      $params{PREREQ_PM}={ %{$params{PREREQ_PM} || {}} , %{$params{BUILD_REQUIRES}} };
+      delete $params{BUILD_REQUIRES};
+  }
+  delete $params{CONFIGURE_REQUIRES} if $eumm_version < 6.52;
+  delete $params{MIN_PERL_VERSION} if $eumm_version < 6.48;
+  delete $params{META_MERGE} if $eumm_version < 6.46;
+  delete $params{META_ADD} if $eumm_version < 6.46;
+  delete $params{LICENSE} if $eumm_version < 6.31;
+  delete $params{AUTHOR} if $] < 5.005;
+  delete $params{ABSTRACT_FROM} if $] < 5.005;
+  delete $params{BINARY_LOCATION} if $] < 5.005;
+
+  WriteMakefile(%params);
+}

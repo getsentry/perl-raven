@@ -1,9 +1,6 @@
 package Sentry::Raven;
 
-# this should (but does not) meet the general client guidelines
-#   http://sentry.readthedocs.org/en/latest/developer/client/index.html
-# ensure does not die
-
+use 5.008;
 use Moose;
 
 our $VERSION = '0.01';

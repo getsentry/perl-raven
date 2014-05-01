@@ -1,9 +1,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More;
 
-BEGIN { use_ok( 'Sentry::Raven' ); }
+use Sentry::Raven;
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new();
@@ -23,3 +23,5 @@ is_deeply(
         value   => 'Operation compelted successfully',
     },
 );
+
+done_testing();

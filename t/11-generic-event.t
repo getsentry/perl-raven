@@ -1,12 +1,11 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More;
 
+use Sentry::Raven;
 use Sys::Hostname;
 use UUID::Tiny ':std';
-
-BEGIN { use_ok( 'Sentry::Raven' ); }
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new();
@@ -72,3 +71,5 @@ is_deeply(
 is($event->{event_id}, 'myeventid');
 is($event->{timestamp}, 'mytimestamp');
 is($event->{server_name}, 'myservername');
+
+done_testing();

@@ -1,11 +1,10 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;
+use Test::More;
 
 use English '-no_match_vars';
-
-BEGIN { use_ok( 'Sentry::Raven' ); }
+use Sentry::Raven;
 
 my $dsn = 'http://key:secret@somewhere.com:9000/foo/123';
 
@@ -24,6 +23,8 @@ is($EVAL_ERROR, "unable to parse sentry dsn: not a uri\n");
 
 eval { Sentry::Raven->new(sentry_dsn => 'http://missing.userinfo.com') };
 is($EVAL_ERROR, "unable to parse public and secret keys from: http://missing.userinfo.com\n");
+
+done_testing();
 
 exit;
 
