@@ -14,6 +14,37 @@ use Sys::Hostname;
 use URI;
 use UUID::Tiny ':std';
 
+=head1 NAME
+
+Sentry::Raven - A perl sentry client
+
+=head1 SYNOPSYS
+
+  my $raven = Sentry::Raven->new(sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' );
+  $raven->capture_message('The sky is falling');
+
+=head1 DESCRIPTION
+
+=head1 METHODS
+
+=head2 my $raven = Raven::Sentry->new( %options )
+
+Create a new sentry interface object.  It accepts the following named options:
+
+=over 4
+
+=item I<sentry_dsn =E<gt> 'http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>'>
+
+The DSN for your sentry service.  Get this from the client configuration page for your project.
+
+=item I<timeout =E<gt> 5>
+
+Do not wait longer than this number of senconds when attempting to send an event.
+
+=back
+
+=cut
+
 has [qw/ scheme host port path public_key secret_key project_id /] => (
     is       => 'ro',
     isa      => 'Str',
@@ -76,6 +107,13 @@ around BUILDARGS => sub {
     );
 };
 
+
+=head2 $raven->capture_message( $message, %options )
+
+Post a string message to the sentry service.
+
+=cut
+
 sub capture_message {
     my ($self, $message, %options) = @_;
     $self->_post_event($self->_generate_message_event($message, %options));
@@ -85,6 +123,12 @@ sub _generate_message_event {
     my ($self, $message, %options) = @_;
     return $self->_generate_event(message => $message, %options);
 };
+
+=head2 $raven->capture_exception( $exception_type, %exception_value, %options )
+
+Post an exception type and value to the sentry service.
+
+=cut
 
 sub capture_exception {
     my ($self, $type, $value, %options) = @_;
@@ -172,5 +216,17 @@ sub _generate_auth_header {
 
 sub _build_json_obj { JSON::XS->new()->utf8(1)->pretty(1)->allow_nonref(1) }
 sub _build_ua_obj { LWP::UserAgent->new() }
+
+=head1 ENVIRONMENT
+
+=over 4
+
+=item SENTRY_DSN
+
+A default dsn to be used if sentry_dsn is not passed to c<new>.
+
+=back
+
+=cut
 
 1;
