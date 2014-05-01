@@ -1,0 +1,10 @@
+Changes
+INSTALL
+lib/Sentry/Raven.pm
+Makefile.PL
+MANIFEST
+README
+t/00_load.t
+t/10_dsn.t
+t/11_generic_event.t
+t/12_specialized_event.t
