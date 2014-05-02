@@ -45,7 +45,7 @@ Do not wait longer than this number of seconds when attempting to send an event.
 
 =cut
 
-has [qw/ scheme host port path public_key secret_key project_id /] => (
+has [qw/ post_url public_key secret_key /] => (
     is       => 'ro',
     isa      => 'Str',
     required => 1,
@@ -99,14 +99,15 @@ around BUILDARGS => sub {
     my ($public_key, $secret_key) = $uri->userinfo() =~ m/(.*):(.*)/;
     my $project_id = pop(@path);
 
+    my $post_url =
+        $uri->scheme().'://'.$uri->host().':'.$uri->port() .
+        join('/', @path).'/api/'.$project_id.'/store/'
+    ;
+
     return $class->$orig(
-        host       => $uri->host(),
-        path       => join('/', @path),
-        port       => $uri->port(),
-        scheme     => $uri->scheme(),
+        post_url   => $post_url,
         public_key => $public_key,
         secret_key => $secret_key,
-        project_id => $project_id,
 
         (defined($args{timeout}) ? (timeout => $args{timeout}) : ()),
         (defined($args{ua_obj})  ? (ua_obj  => $args{ua_obj})  : ()),
@@ -165,7 +166,7 @@ sub _post_event {
         $self->ua_obj()->timeout($self->timeout());
 
         my $response = $self->ua_obj()->post(
-            $self->_post_url(),
+            $self->post_url(),
             'X-Sentry-Auth' => $self->_generate_auth_header(),
             Content         => $event_json,
         );
@@ -220,14 +221,6 @@ sub _validate_level {
         warn "unknown level: $level\n";
         return;
     }
-};
-
-sub _post_url {
-    my ($self) = @_;
-
-    return
-        $self->scheme().'://'.$self->host().':'.$self->port() .
-        $self->path().'/api/'.$self->project_id().'/store/';
 };
 
 sub _generate_auth_header {
