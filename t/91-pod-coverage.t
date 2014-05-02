@@ -1,3 +1,5 @@
+#!/usr/bin/env perl -T
+
 use strict;
 use warnings;
 
