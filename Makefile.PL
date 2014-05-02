@@ -4,7 +4,7 @@ WriteMakefile1(
     NAME                => 'Sentry::Raven',
     PREREQ_PM           => {
         'DateTime'          => 0,
-        'HTTP::Request'     => 0,
+        'English'           => 0,
         'HTTP::Status'      => 0,
         'JSON::XS'          => 0,
         'LWP::UserAgent'    => 0,

@@ -6,7 +6,7 @@ use Moose;
 our $VERSION = '0.01';
 
 use DateTime;
-use HTTP::Request;
+use English '-no_match_vars';
 use HTTP::Status ':constants';
 use JSON::XS;
 use LWP::UserAgent;
@@ -27,7 +27,7 @@ Sentry::Raven - A perl sentry client
 
 =head1 METHODS
 
-=head2 my $raven = Raven::Sentry->new( %options )
+=head2 my $raven = Sentry::Raven->new( %options )
 
 Create a new sentry interface object.  It accepts the following named options:
 
@@ -75,6 +75,12 @@ has ua_obj => (
     lazy    => 1,
 );
 
+has valid_levels => (
+    is      => 'ro',
+    isa     => 'ArrayRef[Str]',
+    default => sub { [qw/ fatal error warning info debug /] },
+);
+
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
 
@@ -110,7 +116,7 @@ around BUILDARGS => sub {
 
 =head2 $raven->capture_message( $message, %options )
 
-Post a string message to the sentry service.
+Post a string message to the sentry service.  Returns the event id.
 
 =cut
 
@@ -124,9 +130,9 @@ sub _generate_message_event {
     return $self->_generate_event(message => $message, %options);
 };
 
-=head2 $raven->capture_exception( $exception_type, %exception_value, %options )
+=head2 $raven->capture_exception( $exception_type, $exception_value, %options )
 
-Post an exception type and value to the sentry service.
+Post an exception type and value to the sentry service.  Returns the event id.
 
 =cut
 
@@ -151,7 +157,7 @@ sub _generate_exception_event {
 sub _post_event {
     my ($self, $event) = @_;
 
-    my $response_code;
+    my ($response_code, $content);
 
     eval {
         my $event_json = $self->json_obj()->encode( $event );
@@ -165,10 +171,13 @@ sub _post_event {
         );
 
         $response_code = $response->code();
+        $content = $response->content();
     };
 
+    warn "$EVAL_ERROR\n" if $EVAL_ERROR;
+
     if (defined($response_code) && $response_code == HTTP_OK) {
-        return $event->{event_id};
+        return $self->json_obj()->decode($content)->{id};
     } else {
         return;
     }
@@ -185,7 +194,6 @@ sub _generate_event {
     return {
         event_id    => $options{event_id}    || _generate_id(),
         timestamp   => $options{timestamp}   || DateTime->now()->iso8601(),
-        level       => $options{level}       || 'error',
         logger      => $options{logger}      || 'root',
         server_name => $options{server_name} || hostname(),
         platform    => $options{platform}    || 'perl',
@@ -194,8 +202,25 @@ sub _generate_event {
         culprit     => $options{culprit},
         extra       => $options{extra}       || {},
         tags        => $options{tags}        || {},
+
+        level       => $self->_validate_level($options{level}) || 'error',
     };
 }
+
+sub _validate_level {
+    my ($self, $level) = @_;
+
+    return unless defined($level);
+
+    my %level_hash = map { $_ => 1 } @{ $self->valid_levels() };
+
+    if (exists($level_hash{$level})) {
+        return $level;
+    } else {
+        warn "unknown level: $level\n";
+        return;
+    }
+};
 
 sub _post_url {
     my ($self) = @_;
@@ -235,7 +260,7 @@ The source of the event.  Defaults to C<undef>.
 
 =item I<event_id =E<gt> C<'534188f7c1ff4ff280c2e1206c9e0548'>>
 
-The unique identifier string for an event, usually UUID v4.  Max 32 characters.  Defaults to a new unique UUID for each event.
+The unique identifier string for an event, usually UUID v4.  Max 32 characters.  Defaults to a new unique UUID for each event.  Invalid ids may be discarded silently.
 
 =item I<extra =E<gt> { key1 =E<gt> 'val1', ... }>
 
@@ -243,7 +268,7 @@ Arbitrary key value pairs with extra information about an event.  Defaults to C<
 
 =item I<level =E<gt> 'error'>
 
-Event level of an event.  Defaults to C<error>.
+Event level of an event.  Acceptable values are C<fatal>, C<error>, C<warning>, C<info>, and C<debug>.  Defaults to C<error>.
 
 =item I<logger =E<gt> 'root'>
 
@@ -263,7 +288,7 @@ Arbitrary key value pairs with tags for categorizing an event.  Defaults to C<{}
 
 =item I<timestamp =E<gt> '1970-01-01T00:00:00'>
 
-Timestamp of an event.  ISO 8601 format.  Defaults to the current time.
+Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid values may be discarded silently.
 
 =back
 

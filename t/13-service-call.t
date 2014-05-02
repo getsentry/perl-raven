@@ -4,12 +4,19 @@ use warnings;
 use Test::More;
 
 use HTTP::Response;
-use JSON::XS;
 use Sentry::Raven;
 use Test::LWP::UserAgent;
 
 my $ua = Test::LWP::UserAgent->new();
-$ua->map_response(qr//, HTTP::Response->new('200'));
+$ua->map_response(
+    qr//,
+    HTTP::Response->new(
+        '200',
+        undef,
+        undef,
+        '{ "id": "some-uuid-string" }',
+    ),
+);
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new(ua_obj => $ua);
@@ -25,7 +32,7 @@ is(
 
 is(
     $event_id,
-    JSON::XS->new()->decode($request->content())->{event_id},
+    'some-uuid-string',
 );
 
 like(

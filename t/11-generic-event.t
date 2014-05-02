@@ -10,7 +10,7 @@ use UUID::Tiny ':std';
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new();
 
-subtest 'Testing defaults' => sub {
+subtest 'defaults' => sub {
     my $event = $raven->_generate_event();
 
     is($event->{level}, 'error');
@@ -27,9 +27,9 @@ subtest 'Testing defaults' => sub {
     is($event->{server_name}, hostname());
 };
 
-subtest 'using defaults' => sub {
+subtest 'overriding defaults' => sub {
     my $event = $raven->_generate_event(
-        level       => 'mylevel',
+        level       => 'warning',
         logger      => 'mylogger',
         platform    => 'myplatform',
         culprit     => 'myculprit',
@@ -49,7 +49,7 @@ subtest 'using defaults' => sub {
         server_name => 'myservername',
     );
 
-    is($event->{level}, 'mylevel');
+    is($event->{level}, 'warning');
     is($event->{logger}, 'mylogger');
     is($event->{platform}, 'myplatform');
     is($event->{culprit}, 'myculprit');
@@ -74,6 +74,18 @@ subtest 'using defaults' => sub {
     is($event->{event_id}, 'myeventid');
     is($event->{timestamp}, 'mytimestamp');
     is($event->{server_name}, 'myservername');
+};
+
+subtest 'invalid options' => sub {
+    my $warn_message;
+    local $SIG{__WARN__} = sub { $warn_message = $_[0] };
+
+    my $event = $raven->_generate_event(
+        level => 'not-a-level',
+    );
+
+    is($event->{level}, 'error');
+    is($warn_message, "unknown level: not-a-level\n");
 };
 
 done_testing();
