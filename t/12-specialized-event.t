@@ -18,14 +18,14 @@ subtest 'message' => sub {
 };
 
 subtest 'exception' => sub {
-    my $event = $raven->_generate_exception_event('OperationFailedException', 'Operation compelted successfully', level => 'info');
+    my $event = $raven->_generate_exception_event('OperationFailedException', 'Operation completed successfully', level => 'info');
 
     is($event->{level}, 'info');
     is_deeply(
         $event->{'sentry.interfaces.Exception'},
         {
             type    => 'OperationFailedException',
-            value   => 'Operation compelted successfully',
+            value   => 'Operation completed successfully',
         },
     );
 };

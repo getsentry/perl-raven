@@ -18,14 +18,18 @@ use UUID::Tiny ':std';
 
 Sentry::Raven - A perl sentry client
 
-=head1 SYNOPSYS
+=head1 VERSION
+
+Version 0.01
+
+=head1 SYNOPSIS
 
   my $raven = Sentry::Raven->new(sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' );
   $raven->capture_message('The sky is falling');
 
 =head1 DESCRIPTION
 
-=head1 METHODS
+=head1 SUBROUTINES/METHODS
 
 =head2 my $raven = Sentry::Raven->new( %options )
 
@@ -95,7 +99,7 @@ around BUILDARGS => sub {
     die "unable to parse public and secret keys from: $sentry_dsn\n"
         unless defined($uri->userinfo()) && $uri->userinfo() =~ m/:/;
 
-    my @path = split('/', $uri->path());
+    my @path = split(m{/}, $uri->path());
     my ($public_key, $secret_key) = $uri->userinfo() =~ m/(.*):(.*)/;
     my $project_id = pop(@path);
 
@@ -123,7 +127,7 @@ Post a string message to the sentry service.  Returns the event id.
 
 sub capture_message {
     my ($self, $message, %options) = @_;
-    $self->_post_event($self->_generate_message_event($message, %options));
+    return $self->_post_event($self->_generate_message_event($message, %options));
 };
 
 sub _generate_message_event {
@@ -139,7 +143,7 @@ Post an exception type and value to the sentry service.  Returns the event id.
 
 sub capture_exception {
     my ($self, $type, $value, %options) = @_;
-    $self->_post_event($self->_generate_exception_event($type, $value, %options));
+    return $self->_post_event($self->_generate_exception_event($type, $value, %options));
 };
 
 sub _generate_exception_event {
@@ -285,11 +289,11 @@ Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid
 
 =back
 
-=head1 ENVIRONMENT
+=head1 CONFIGURATION AND ENVIRONMENT
 
 =over 4
 
-=item SENTRY_DSN
+=item SENTRY_DSN=C<http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>>
 
 A default DSN to be used if sentry_dsn is not passed to c<new>.
 
