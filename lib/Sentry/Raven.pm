@@ -151,17 +151,23 @@ sub _generate_exception_event {
 sub _post_event {
     my ($self, $event) = @_;
 
-    my $event_json = $self->json_obj()->encode( $event );
+    my $response_code;
 
-    $self->ua_obj()->timeout($self->timeout());
+    eval {
+        my $event_json = $self->json_obj()->encode( $event );
 
-    my $response = $self->ua_obj()->post(
-        $self->_post_url(),
-        'X-Sentry-Auth' => $self->_generate_auth_header(),
-        Content         => $event_json,
-    );
+        $self->ua_obj()->timeout($self->timeout());
 
-    if ($response->code() == HTTP_OK) {
+        my $response = $self->ua_obj()->post(
+            $self->_post_url(),
+            'X-Sentry-Auth' => $self->_generate_auth_header(),
+            Content         => $event_json,
+        );
+
+        $response_code = $response->code();
+    };
+
+    if (defined($response_code) && $response_code == HTTP_OK) {
         return $event->{event_id};
     } else {
         return;
