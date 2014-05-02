@@ -33,13 +33,13 @@ Create a new sentry interface object.  It accepts the following named options:
 
 =over 4
 
-=item I<sentry_dsn =E<gt> 'http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>'>
+=item I<sentry_dsn =E<gt> C<'http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>'>>
 
 The DSN for your sentry service.  Get this from the client configuration page for your project.
 
 =item I<timeout =E<gt> 5>
 
-Do not wait longer than this number of senconds when attempting to send an event.
+Do not wait longer than this number of seconds when attempting to send an event.
 
 =back
 
@@ -223,13 +223,57 @@ sub _generate_auth_header {
 sub _build_json_obj { JSON::XS->new()->utf8(1)->pretty(1)->allow_nonref(1) }
 sub _build_ua_obj { LWP::UserAgent->new() }
 
+=head1 STANDARD OPTIONS
+
+These options can be passed to all of the C<capture_*> methods.
+
+=over 4
+
+=item I<culprit =E<gt> 'Some::Software'>
+
+The source of the event.  Defaults to C<undef>.
+
+=item I<event_id =E<gt> C<'534188f7c1ff4ff280c2e1206c9e0548'>>
+
+The unique identifier string for an event, usually UUID v4.  Max 32 characters.  Defaults to a new unique UUID for each event.
+
+=item I<extra =E<gt> { key1 =E<gt> 'val1', ... }>
+
+Arbitrary key value pairs with extra information about an event.  Defaults to C<{}>.
+
+=item I<level =E<gt> 'error'>
+
+Event level of an event.  Defaults to C<error>.
+
+=item I<logger =E<gt> 'root'>
+
+The creator of an event.  Defaults to current user.
+
+=item I<platform =E<gt> 'perl'>
+
+The platform (language) in which an event occurred.  Defaults to C<perl>.
+
+=item I<server_name =E<gt> 'localhost.example.com'>
+
+The hostname on which an event occurred.  Defaults to the system hostname.
+
+=item I<tags =E<gt> { key1 =E<gt> 'val1, ... }>
+
+Arbitrary key value pairs with tags for categorizing an event.  Defaults to C<{}>.
+
+=item I<timestamp =E<gt> '1970-01-01T00:00:00'>
+
+Timestamp of an event.  ISO 8601 format.  Defaults to the current time.
+
+=back
+
 =head1 ENVIRONMENT
 
 =over 4
 
 =item SENTRY_DSN
 
-A default dsn to be used if sentry_dsn is not passed to c<new>.
+A default DSN to be used if sentry_dsn is not passed to c<new>.
 
 =back
 
