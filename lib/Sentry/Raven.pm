@@ -29,6 +29,8 @@ Version 0.01
 
 =head1 DESCRIPTION
 
+This module implements the recommended raven interface for posting events to a sentry service.
+
 =head1 SUBROUTINES/METHODS
 
 =head2 my $raven = Sentry::Raven->new( %options )

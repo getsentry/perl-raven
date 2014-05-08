@@ -2,6 +2,12 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile1(
     NAME                => 'Sentry::Raven',
+    ABSTRACT_FROM       => 'lib/Sentry/Raven.pm',
+    VERSION_FROM        => 'lib/Sentry/Raven.pm',
+    MIN_PERL_VERSION    => '5.008',
+    AUTHOR              => 'Rentrak Corporation',
+    LICENSE             => 'mit',
+
     PREREQ_PM           => {
         'DateTime'          => 0,
         'English'           => 0,
@@ -13,13 +19,26 @@ WriteMakefile1(
         'URI'               => 0,
         'UUID::Tiny'        => 0,
     },
+
     TEST_REQUIRES       => {
-        'HTTP::Response'        => 0,
-        'Test::LWP::UserAgent'  => 0,
-        'Test::More'            => 0,
+        'HTTP::Response'                    => 0,
+        'Test::CPAN::Changes::ReallyStrict' => 0,
+        'Test::LWP::UserAgent'              => 0,
+        'Test::More'                        => '0.88', 
     },
-    VERSION_FROM        => 'lib/Sentry/Raven.pm',
-    MIN_PERL_VERSION    => '5.008',
+
+    META_MERGE          => {
+        "meta-spec" => { version => 2 },
+        license     => [ 'http://opensource.org/licenses/MIT' ],
+        homepage    => 'https://github.com/rentrak/perl-raven',
+        resources   => {
+            repository => {
+                type => 'git',
+                url  => 'git@github.com:rentrak/perl-raven.git',
+                web  => 'https://github.com/rentrak/perl-raven',
+            },
+        },
+    },
 );
 
 

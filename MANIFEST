@@ -1,6 +1,7 @@
 Changes
 INSTALL
 lib/Sentry/Raven.pm
+LICENSE
 Makefile.PL
 MANIFEST
 README
@@ -14,4 +15,5 @@ t/90-perl-critic.t
 t/91-pod-coverage.t
 t/92-pod-syntax.t
 t/93-spelling.t
+t/94-changes.t
 t/99-todo.t

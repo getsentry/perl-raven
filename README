@@ -1,0 +1,26 @@
+Sentry::Raven version 0.01
+
+Sentry::Raven is a module for sending events to a sentry service.
+
+SYNOPSIS
+
+  use Sentry::Raven;
+  my $raven = Sentry::Raven->new(sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' );
+  $raven->capture_message('The sky is falling');
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+Perl 5.8 or later.
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2014 by Rentrak Corporation
