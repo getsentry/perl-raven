@@ -25,10 +25,15 @@ WriteMakefile1(
         'Test::CPAN::Changes::ReallyStrict' => 0,
         'Test::LWP::UserAgent'              => 0,
         'Test::More'                        => '0.88', 
+        'Test::Perl::Critic'                => 0,
     },
 
     META_MERGE          => {
-        "meta-spec" => { version => 2 },
+        'meta-spec' => {
+            version => '2',
+            url     => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec',
+        },
+
         license     => [ 'http://opensource.org/licenses/MIT' ],
         homepage    => 'https://github.com/rentrak/perl-raven',
         resources   => {
