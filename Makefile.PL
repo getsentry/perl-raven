@@ -34,7 +34,6 @@ WriteMakefile1(
             url     => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec',
         },
 
-        license     => [ 'http://opensource.org/licenses/MIT' ],
         homepage    => 'https://github.com/rentrak/perl-raven',
         resources   => {
             repository => {

@@ -271,7 +271,7 @@ Event level of an event.  Acceptable values are C<fatal>, C<error>, C<warning>, 
 
 =item I<logger =E<gt> 'root'>
 
-The creator of an event.  Defaults to current user.
+The creator of an event.  Defaults to 'root'.
 
 =item I<platform =E<gt> 'perl'>
 
@@ -300,6 +300,12 @@ Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid
 A default DSN to be used if sentry_dsn is not passed to c<new>.
 
 =back
+
+=head1 LICENSE
+
+Copyright (C) 2014 by Rentrak Corporation
+
+The full text of this license can be found in the LICENSE file included with this module.
 
 =cut
 
