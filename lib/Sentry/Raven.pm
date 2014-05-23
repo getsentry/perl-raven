@@ -131,12 +131,8 @@ Post a string message to the sentry service.  Returns the event id.
 
 sub capture_message {
     my ($self, $message, %options) = @_;
-    return $self->_post_event($self->_generate_message_event($message, %options));
-};
-
-sub _generate_message_event {
-    my ($self, $message, %options) = @_;
-    return $self->_generate_event(message => $message, %options);
+    my $event = $self->_generate_event(message => $message, %options);
+    return $self->_post_event($event);
 };
 
 =head2 $raven->capture_exception( $exception_type, $exception_value, %options )
@@ -147,13 +143,12 @@ Post an exception type and value to the sentry service.  Returns the event id.
 
 sub capture_exception {
     my ($self, $type, $value, %options) = @_;
-    return $self->_post_event($self->_generate_exception_event($type, $value, %options));
+    my $event = $self->_add_exception_to_event($self->_generate_event(%options), $type, $value);
+    return $self->_post_event($event);
 };
 
-sub _generate_exception_event {
-    my ($self, $type, $value, %options) = @_;
-
-    my $event = $self->_generate_event(%options);
+sub _add_exception_to_event {
+    my ($self, $event, $type, $value) = @_;
 
     $event->{'sentry.interfaces.Exception'} = {
         type  => $type,
