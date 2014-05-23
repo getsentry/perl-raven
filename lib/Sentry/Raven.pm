@@ -3,7 +3,7 @@ package Sentry::Raven;
 use 5.008;
 use strict;
 use Moo;
-use MooX::Types::MooseLike::Base qw/ ArrayRef Int Str /;
+use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
 our $VERSION = '0.01';
 
@@ -89,6 +89,12 @@ has valid_levels => (
     default => sub { [qw/ fatal error warning info debug /] },
 );
 
+has options => (
+    is      => 'ro',
+    isa     => HashRef[],
+    default => sub { { } },
+);
+
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
 
@@ -116,6 +122,7 @@ around BUILDARGS => sub {
         post_url   => $post_url,
         public_key => $public_key,
         secret_key => $secret_key,
+        options    => \%args,
 
         (defined($args{timeout}) ? (timeout => $args{timeout}) : ()),
         (defined($args{ua_obj})  ? (ua_obj  => $args{ua_obj})  : ()),
@@ -349,20 +356,30 @@ sub _generate_event {
     my ($self, %options) = @_;
 
     return {
-        event_id    => $options{event_id}    || _generate_id(),
-        timestamp   => $options{timestamp}   || DateTime->now()->iso8601(),
-        logger      => $options{logger}      || 'root',
-        server_name => $options{server_name} || hostname(),
-        platform    => $options{platform}    || 'perl',
+        event_id    => $options{event_id}    || $self->options()->{event_id}    || _generate_id(),
+        timestamp   => $options{timestamp}   || $self->options()->{timestamp}   || DateTime->now()->iso8601(),
+        logger      => $options{logger}      || $self->options()->{logger}      || 'root',
+        server_name => $options{server_name} || $self->options()->{server_name} || hostname(),
+        platform    => $options{platform}    || $self->options()->{platform}    || 'perl',
 
-        message     => $options{message},
-        culprit     => $options{culprit},
-        extra       => $options{extra}       || {},
-        tags        => $options{tags}        || {},
+        message     => $options{message}     || $self->options()->{message},
+        culprit     => $options{culprit}     || $self->options()->{culprit},
 
-        level       => $self->_validate_level($options{level}) || 'error',
+        extra       => $self->_merge_hashrefs($self->options()->{extra}, $options{extra}),
+        tags        => $self->_merge_hashrefs($self->options()->{tags}, $options{tags}),
+
+        level       => $self->_validate_level($options{level}) || $self->options()->{level} || 'error',
     };
 }
+
+sub _merge_hashrefs {
+    my ($self, $hash1, $hash2) = @_;
+
+    return {
+        ($hash1 ? %{ $hash1 } : ()),
+        ($hash2 ? %{ $hash2 } : ()),
+    };
+};
 
 sub _validate_level {
     my ($self, $level) = @_;
@@ -399,7 +416,7 @@ sub _build_ua_obj { LWP::UserAgent->new() }
 
 =head1 STANDARD OPTIONS
 
-These options can be passed to all of the C<capture_*> methods.
+These options can be passed to all methods accepting %options.  Passing these options to the constructor overrides defaults.
 
 =over 4
 

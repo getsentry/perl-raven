@@ -29,6 +29,57 @@ subtest 'defaults' => sub {
     is($event->{server_name}, hostname());
 };
 
+subtest 'modifying defaults' => sub {
+    my $raven = Sentry::Raven->new(
+        level       => 'warning',
+        logger      => 'mylogger',
+        platform    => 'myplatform',
+        culprit     => 'myculprit',
+        message     => 'mymessage',
+
+        extra       => {
+            key1    => 'value1',
+            key2    => 'value2',
+        },
+        tags        => {
+            tag1    => 'value1',
+            tag2    => 'value2',
+        },
+
+        event_id    => 'myeventid',
+        timestamp   => 'mytimestamp',
+        server_name => 'myservername',
+    );
+
+    my $event = $raven->_generate_event();
+
+    is($event->{level}, 'warning');
+    is($event->{logger}, 'mylogger');
+    is($event->{platform}, 'myplatform');
+    is($event->{culprit}, 'myculprit');
+    is($event->{message}, 'mymessage');
+
+    is_deeply(
+        $event->{extra},
+        {
+            key1    => 'value1',
+            key2    => 'value2',
+        },
+    );
+
+    is_deeply(
+        $event->{tags},
+        {
+            tag1    => 'value1',
+            tag2    => 'value2',
+        },
+    );
+
+    is($event->{event_id}, 'myeventid');
+    is($event->{timestamp}, 'mytimestamp');
+    is($event->{server_name}, 'myservername');
+};
+
 subtest 'overriding defaults' => sub {
     my $event = $raven->_generate_event(
         level       => 'warning',
@@ -76,6 +127,47 @@ subtest 'overriding defaults' => sub {
     is($event->{event_id}, 'myeventid');
     is($event->{timestamp}, 'mytimestamp');
     is($event->{server_name}, 'myservername');
+};
+
+subtest 'overriding modified defaults' => sub {
+    my $raven = Sentry::Raven->new(
+        level       => 'warning',
+        extra       => {
+            key1    => 'value1',
+        },
+        tags        => {
+            tag1    => 'value1',
+        },
+    );
+
+    my $event = $raven->_generate_event(
+        level       => 'fatal',
+
+        extra       => {
+            key2    => 'value2',
+        },
+        tags        => {
+            tag2    => 'value2',
+        },
+    );
+
+    is($event->{level}, 'fatal');
+
+    is_deeply(
+        $event->{extra},
+        {
+            key1    => 'value1',
+            key2    => 'value2',
+        },
+    );
+
+    is_deeply(
+        $event->{tags},
+        {
+            tag1    => 'value1',
+            tag2    => 'value2',
+        },
+    );
 };
 
 subtest 'invalid options' => sub {
