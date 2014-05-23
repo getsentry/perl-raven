@@ -158,6 +158,52 @@ sub _add_exception_to_event {
     return $event;
 };
 
+=head2 $raven->capture_request( $url, %request_options, %options )
+
+Post a web url request to the sentry service.  Returns the event id.
+
+C<%options> can contain:
+
+=over
+
+=item I<method =E<gt> 'GET'>
+
+=item I<data =E<gt> { $key =E<gt> $value }>
+
+=item I<query_string =E<gt> 'foo=bar'>
+
+=item I<cookies =E<gt> 'foo=bar'>
+
+=item I<headers =E<gt> { 'Content-Type' =E<gt> 'text/html' }>
+
+=item I<C<env> =E<gt> { REMOTE_ADDR =E<gt> '192.168.0.1' }>
+
+=back
+
+=cut
+
+sub capture_request {
+    my ($self, $url, %options) = @_;
+    my $event = $self->_add_request_to_event($self->_generate_event(%options), $url, %options);
+    return $self->_post_event($event);
+};
+
+sub _add_request_to_event {
+    my ($self, $event, $url, %options) = @_;
+
+    $event->{'sentry.interfaces.Http'} = {
+        url          => $url,
+        method       => $options{method},
+        data         => $options{data},
+        query_string => $options{query_string},
+        cookies      => $options{cookies},
+        headers      => $options{headers},
+        env          => $options{env},
+    };
+
+    return $event;
+};
+
 sub _post_event {
     my ($self, $event) = @_;
 

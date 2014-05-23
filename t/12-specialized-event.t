@@ -31,4 +31,32 @@ subtest 'exception' => sub {
     );
 };
 
+subtest 'request' => sub {
+    my $event = $raven->_generate_event(level => 'info');
+    $event = $raven->_add_request_to_event(
+        $event,
+        'http://google.com',
+        method       => 'GET',
+        data         => { foo => 'bar' },
+        query_string => 'foo=bar',
+        cookies      => 'foo=bar',
+        headers      => { 'Content-Type' => 'text/html' },
+        env          => { REMOTE_ADDR => '192.168.0.1' },
+    );
+
+    is($event->{level}, 'info');
+    is_deeply(
+        $event->{'sentry.interfaces.Http'},
+        {
+            url          => 'http://google.com',
+            method       => 'GET',
+            data         => { foo => 'bar' },
+            query_string => 'foo=bar',
+            cookies      => 'foo=bar',
+            headers      => { 'Content-Type' => 'text/html' },
+            env          => { REMOTE_ADDR => '192.168.0.1' },
+        },
+    );
+};
+
 done_testing();
