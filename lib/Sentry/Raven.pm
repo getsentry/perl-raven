@@ -122,6 +122,46 @@ around BUILDARGS => sub {
     );
 };
 
+=head2 $raven->capture_errors( $subref, %options )
+
+Execute the $subref and report any exceptions (die) back to the sentry service.  This automatically includes a stacktrace.  This requires C<$SIG{__DIE__}> so be careful not to override it in subsequent code or error reporting will be impacted.
+
+=cut
+
+sub capture_errors {
+    my ($self, $subref, %options) = @_;
+
+    local $SIG{__DIE__} = sub {
+        my ($message) = @_;
+        chomp($message);
+
+        my @frames;
+        my $depth = 1;
+        while (my @frame = caller($depth++)) {
+            push @frames, {
+                module   => $frame[0],
+                filename => $frame[1],
+                lineno   => $frame[2],
+                function => $frame[3],
+            };
+        }
+        @frames = reverse @frames;
+
+        my $event = $self->_generate_event(
+            %options,
+            message => $message,
+            culprit => $PROGRAM_NAME,
+        );
+
+        $event = $self->_add_exception_to_event($event, 'Die', $message);
+        $event = $self->_add_stacktrace_to_event($event, \@frames);
+
+        $self->_post_event($event);
+    };
+
+    return $subref->();
+};
+
 
 =head2 $raven->capture_message( $message, %options )
 
