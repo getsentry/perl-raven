@@ -59,4 +59,34 @@ subtest 'request' => sub {
     );
 };
 
+subtest 'stacktrace' => sub {
+    my $frames = [
+        {
+            filename     => 'filename1',
+            function     => 'function1',
+            module       => 'module1',
+            lineno       => 10,
+            colno        => 20,
+            abs_path     => '/tmp/filename1',
+            context_line => 'my $foo = "bar";',
+            pre_context  => [ 'sub function1 {' ],
+            post_context => [ 'print $foo' ],
+            in_app       => 1,
+            vars         => { foo => 'bar' },
+        },
+        {
+            filename => 'my/file2.pl',
+        },
+    ];
+
+    my $event = $raven->_generate_event(level => 'info');
+    $event = $raven->_add_stacktrace_to_event($event, $frames);
+
+    is($event->{level}, 'info');
+    is_deeply(
+        $event->{'sentry.interfaces.Stacktrace'},
+        { frames => $frames },
+    );
+};
+
 done_testing();

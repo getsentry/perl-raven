@@ -204,6 +204,73 @@ sub _add_request_to_event {
     return $event;
 };
 
+=head2 $raven->capture_stacktrace( $frames, %options )
+
+Post a stacktrace to the sentry service.  Returns the event id.
+
+C<$frames> is an arrayref of hashrefs with each hashref representing a single frame.
+
+    my $frames = [
+        {
+            filename => 'my/file1.pl',
+            function => 'function1',
+            vars     => { foo => 'bar' },
+            lineno   => 10,
+        },
+        {
+            filename => 'my/file2.pl',
+            function => 'function2',
+            vars     => { bar => 'baz' },
+            lineno   => 20,
+        },
+    ];
+
+The first frame should be the oldest frame.  Frames must contain at least one of C<filename>, C<function>, or C<module>.  These additional attributes are also supported:
+
+=over
+
+=item I<filename =E<gt> $file_name>
+
+=item I<function =E<gt> $function_name>
+
+=item I<module =E<gt> $module_name>
+
+=item I<C<lineno> =E<gt> $line_number>
+
+=item I<C<colno> =E<gt> $column_number>
+
+=item I<abs_path =E<gt> $absolute_path_file_name>
+
+=item I<context_line =E<gt> $line_of_code>
+
+=item I<pre_context =E<gt> [ $previous_line1, $previous_line2 ]>
+
+=item I<post_context =E<gt> [ $next_line1, $next_line2 ]>
+
+=item I<in_app =E<gt> $one_if_not_external_library>
+
+=item I<vars =E<gt> { $variable_name =E<gt> $variable_value }>
+
+=back
+
+=cut
+
+sub capture_stacktrace {
+    my ($self, $frames, %options) = @_;
+    my $event = $self->_add_stacktrace_to_event($self->_generate_event(%options), $frames);
+    return $self->_post_event($event);
+};
+
+sub _add_stacktrace_to_event {
+    my ($self, $event, $frames) = @_;
+
+    $event->{'sentry.interfaces.Stacktrace'} = {
+        frames => $frames,
+    };
+
+    return $event;
+};
+
 sub _post_event {
     my ($self, $event) = @_;
 
