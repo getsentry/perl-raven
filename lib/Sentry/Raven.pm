@@ -1,7 +1,9 @@
 package Sentry::Raven;
 
 use 5.008;
-use Moose;
+use strict;
+use Moo;
+use MooX::Types::MooseLike::Base qw/ ArrayRef Int Str /;
 
 our $VERSION = '0.01';
 
@@ -53,19 +55,19 @@ Do not wait longer than this number of seconds when attempting to send an event.
 
 has [qw/ post_url public_key secret_key /] => (
     is       => 'ro',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has sentry_version => (
     is      => 'ro',
-    isa     => 'Int',
+    isa     => Int,
     default => 3,
 );
 
 has timeout => (
     is      => 'ro',
-    isa     => 'Int',
+    isa     => Int,
     default => 5,
 );
 
@@ -83,7 +85,7 @@ has ua_obj => (
 
 has valid_levels => (
     is      => 'ro',
-    isa     => 'ArrayRef[Str]',
+    isa     => ArrayRef[Str],
     default => sub { [qw/ fatal error warning info debug /] },
 );
 

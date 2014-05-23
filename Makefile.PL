@@ -9,15 +9,16 @@ WriteMakefile1(
     LICENSE             => 'mit',
 
     PREREQ_PM           => {
-        'DateTime'          => 0,
-        'English'           => 0,
-        'HTTP::Status'      => 0,
-        'JSON::XS'          => 0,
-        'LWP::UserAgent'    => 0,
-        'Moose'             => 0,
-        'Sys::Hostname'     => 0,
-        'URI'               => 0,
-        'UUID::Tiny'        => 0,
+        'DateTime'                     => 0,
+        'English'                      => 0,
+        'HTTP::Status'                 => 0,
+        'JSON::XS'                     => 0,
+        'LWP::UserAgent'               => 0,
+        'Moo'                          => 0,
+        'MooX::Types::MooseLike::Base' => 0,
+        'Sys::Hostname'                => 0,
+        'URI'                          => 0,
+        'UUID::Tiny'                   => 0,
     },
 
     TEST_REQUIRES       => {

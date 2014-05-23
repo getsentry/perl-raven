@@ -4,17 +4,15 @@ use strict;
 use warnings;
 
 package FailingRaven;
-use Moose;
+use Moo;
 extends 'Sentry::Raven';
 
 sub json_obj { die "something is super wrong" }
 
 
-package Main;
+package main;
 
 use Test::More;
-
-use Sentry::Raven;
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $failing_raven = FailingRaven->new();
