@@ -1,2 +1,9 @@
+0.02 2014-05-23
+ - Override event defaults in the constructor
+ - Automatically post stack traces with the error handler
+ - Post stack traces (sentry interface type)
+ - Post http requests (sentry interface type)
+ - Package improvements
+
 0.01 2014-05-07
  - Initial release
