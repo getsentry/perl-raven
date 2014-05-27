@@ -11,6 +11,7 @@ t/11-generic-event.t
 t/12-specialized-event.t
 t/13-service-call.t
 t/14-does-not-die.t
+t/15-error-handler.t
 t/90-perl-critic.t
 t/91-pod-coverage.t
 t/92-pod-syntax.t
