@@ -26,14 +26,21 @@ Version 0.02
 
 =head1 SYNOPSIS
 
-  my $raven = Sentry::Raven->new(sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' );
+  my $raven = Sentry::Raven->new( sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' );
+
+  # capture all errors
+  $raven->capture_errors( sub {
+      ..do something here..
+  } );
+
+  # capture an individual event
   $raven->capture_message('The sky is falling');
 
 =head1 DESCRIPTION
 
 This module implements the recommended raven interface for posting events to a sentry service.
 
-=head1 SUBROUTINES/METHODS
+=head1 CONSTRUCTOR
 
 =head2 my $raven = Sentry::Raven->new( %options )
 
@@ -129,6 +136,10 @@ around BUILDARGS => sub {
     );
 };
 
+=head1 ERROR HANDLERS
+
+These methods are designed to capture events and handle them automatically.
+
 =head2 $raven->capture_errors( $subref, %options )
 
 Execute the $subref and report any exceptions (die) back to the sentry service.  This automatically includes a stacktrace.  This requires C<$SIG{__DIE__}> so be careful not to override it in subsequent code or error reporting will be impacted.
@@ -169,6 +180,9 @@ sub capture_errors {
     return $subref->();
 };
 
+=head1 METHODS
+
+These methods are for generating individual events.
 
 =head2 $raven->capture_message( $message, %options )
 
@@ -413,6 +427,10 @@ sub _generate_auth_header {
 
 sub _build_json_obj { JSON::XS->new()->utf8(1)->pretty(1)->allow_nonref(1) }
 sub _build_ua_obj { LWP::UserAgent->new() }
+
+=head1 EVENT ANNOTATORS
+
+These methods are for annotating events by adding additional items, such as stack traces or HTTP requests.
 
 =head1 STANDARD OPTIONS
 
