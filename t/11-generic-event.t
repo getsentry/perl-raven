@@ -13,7 +13,7 @@ local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new();
 
 subtest 'defaults' => sub {
-    my $event = $raven->_generate_event();
+    my $event = $raven->_construct_event();
 
     is($event->{level}, 'error');
     is($event->{logger}, 'root');
@@ -51,7 +51,7 @@ subtest 'modifying defaults' => sub {
         server_name => 'myservername',
     );
 
-    my $event = $raven->_generate_event();
+    my $event = $raven->_construct_event();
 
     is($event->{level}, 'warning');
     is($event->{logger}, 'mylogger');
@@ -81,7 +81,7 @@ subtest 'modifying defaults' => sub {
 };
 
 subtest 'overriding defaults' => sub {
-    my $event = $raven->_generate_event(
+    my $event = $raven->_construct_event(
         level       => 'warning',
         logger      => 'mylogger',
         platform    => 'myplatform',
@@ -140,7 +140,7 @@ subtest 'overriding modified defaults' => sub {
         },
     );
 
-    my $event = $raven->_generate_event(
+    my $event = $raven->_construct_event(
         level       => 'fatal',
 
         extra       => {
@@ -170,11 +170,11 @@ subtest 'overriding modified defaults' => sub {
     );
 };
 
-subtest 'invalid options' => sub {
+subtest 'invalid context' => sub {
     my $warn_message;
     local $SIG{__WARN__} = sub { $warn_message = $_[0] };
 
-    my $event = $raven->_generate_event(
+    my $event = $raven->_construct_event(
         level => 'not-a-level',
     );
 

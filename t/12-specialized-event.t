@@ -11,15 +11,14 @@ local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new();
 
 subtest 'message' => sub {
-    my $event = $raven->_generate_event(message => 'mymessage', level => 'info');
+    my $event = $raven->_construct_message_event('mymessage', level => 'info');
 
     is($event->{message}, 'mymessage');
     is($event->{level}, 'info');
 };
 
 subtest 'exception' => sub {
-    my $event = $raven->_generate_event(level => 'info');
-    $event = $raven->_add_exception_to_event($event, 'OperationFailedException', 'Operation completed successfully');
+    my $event = $raven->_construct_exception_event('OperationFailedException', 'Operation completed successfully', level => 'info');
 
     is($event->{level}, 'info');
     is_deeply(
@@ -32,9 +31,7 @@ subtest 'exception' => sub {
 };
 
 subtest 'request' => sub {
-    my $event = $raven->_generate_event(level => 'info');
-    $event = $raven->_add_request_to_event(
-        $event,
+    my $event = $raven->_construct_request_event(
         'http://google.com',
         method       => 'GET',
         data         => { foo => 'bar' },
@@ -42,6 +39,7 @@ subtest 'request' => sub {
         cookies      => 'foo=bar',
         headers      => { 'Content-Type' => 'text/html' },
         env          => { REMOTE_ADDR => '192.168.0.1' },
+        level        => 'info',
     );
 
     is($event->{level}, 'info');
@@ -79,8 +77,7 @@ subtest 'stacktrace' => sub {
         },
     ];
 
-    my $event = $raven->_generate_event(level => 'info');
-    $event = $raven->_add_stacktrace_to_event($event, $frames);
+    my $event = $raven->_construct_stacktrace_event($frames, level => 'info');
 
     is($event->{level}, 'info');
     is_deeply(

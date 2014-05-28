@@ -36,13 +36,19 @@ Version 0.02
   # capture an individual event
   $raven->capture_message('The sky is falling');
 
+  # annotate an event with context
+  $raven->capture_message(
+    'The sky is falling',
+    $raven->exception_context('SkyException', 'falling'),
+  );
+
 =head1 DESCRIPTION
 
 This module implements the recommended raven interface for posting events to a sentry service.
 
 =head1 CONSTRUCTOR
 
-=head2 my $raven = Sentry::Raven->new( %options )
+=head2 my $raven = Sentry::Raven->new( %options, %context )
 
 Create a new sentry interface object.  It accepts the following named options:
 
@@ -96,7 +102,13 @@ has valid_levels => (
     default => sub { [qw/ fatal error warning info debug /] },
 );
 
-has options => (
+has valid_interfaces => (
+    is      => 'ro',
+    isa     => ArrayRef[Str],
+    default => sub { [qw/ sentry.interfaces.Exception sentry.interfaces.Http sentry.interfaces.Stacktrace /] },
+);
+
+has context => (
     is      => 'ro',
     isa     => HashRef[],
     default => sub { { } },
@@ -129,7 +141,7 @@ around BUILDARGS => sub {
         post_url   => $post_url,
         public_key => $public_key,
         secret_key => $secret_key,
-        options    => \%args,
+        context    => \%args,
 
         (defined($args{timeout}) ? (timeout => $args{timeout}) : ()),
         (defined($args{ua_obj})  ? (ua_obj  => $args{ua_obj})  : ()),
@@ -140,14 +152,14 @@ around BUILDARGS => sub {
 
 These methods are designed to capture events and handle them automatically.
 
-=head2 $raven->capture_errors( $subref, %options )
+=head2 $raven->capture_errors( $subref, %context )
 
 Execute the $subref and report any exceptions (die) back to the sentry service.  This automatically includes a stacktrace.  This requires C<$SIG{__DIE__}> so be careful not to override it in subsequent code or error reporting will be impacted.
 
 =cut
 
 sub capture_errors {
-    my ($self, $subref, %options) = @_;
+    my ($self, $subref, %context) = @_;
 
     local $SIG{__DIE__} = sub {
         my ($message) = @_;
@@ -165,16 +177,13 @@ sub capture_errors {
         }
         @frames = reverse @frames;
 
-        my $event = $self->_generate_event(
-            %options,
-            message => $message,
+        $self->capture_message(
+            $message,
             culprit => $PROGRAM_NAME,
+            %context,
+            $self->exception_context('Die', $message),
+            $self->stacktrace_context(\@frames),
         );
-
-        $event = $self->_add_exception_to_event($event, 'Die', $message);
-        $event = $self->_add_stacktrace_to_event($event, \@frames);
-
-        $self->_post_event($event);
     };
 
     return $subref->();
@@ -184,46 +193,46 @@ sub capture_errors {
 
 These methods are for generating individual events.
 
-=head2 $raven->capture_message( $message, %options )
+=head2 $raven->capture_message( $message, %context )
 
 Post a string message to the sentry service.  Returns the event id.
 
 =cut
 
 sub capture_message {
-    my ($self, $message, %options) = @_;
-    my $event = $self->_generate_event(message => $message, %options);
-    return $self->_post_event($event);
-};
+    my ($self, $message, %context) = @_;
+    return $self->_post_event($self->_construct_message_event($message, %context));
+}
 
-=head2 $raven->capture_exception( $exception_type, $exception_value, %options )
+sub _construct_message_event {
+    my ($self, $message, %context) = @_;
+    return $self->_construct_event(message => $message, %context);
+}
+
+=head2 $raven->capture_exception( $exception_type, $exception_value, %context )
 
 Post an exception type and value to the sentry service.  Returns the event id.
 
 =cut
 
 sub capture_exception {
-    my ($self, $type, $value, %options) = @_;
-    my $event = $self->_add_exception_to_event($self->_generate_event(%options), $type, $value);
-    return $self->_post_event($event);
+    my ($self, $type, $value, %context) = @_;
+    return $self->_post_event($self->_construct_exception_event($type, $value, %context));
 };
 
-sub _add_exception_to_event {
-    my ($self, $event, $type, $value) = @_;
-
-    $event->{'sentry.interfaces.Exception'} = {
-        type  => $type,
-        value => $value,
-    };
-
-    return $event;
+sub _construct_exception_event {
+    my ($self, $type, $value, %context) = @_;
+    return $self->_construct_event(
+        %context,
+        $self->exception_context($type, $value),
+    );
 };
 
-=head2 $raven->capture_request( $url, %request_options, %options )
+=head2 $raven->capture_request( $url, %request_context, %context )
 
 Post a web url request to the sentry service.  Returns the event id.
 
-C<%options> can contain:
+C<%request_context> can contain:
 
 =over
 
@@ -244,28 +253,20 @@ C<%options> can contain:
 =cut
 
 sub capture_request {
-    my ($self, $url, %options) = @_;
-    my $event = $self->_add_request_to_event($self->_generate_event(%options), $url, %options);
-    return $self->_post_event($event);
+    my ($self, $url, %context) = @_;
+    return $self->_post_event($self->_construct_request_event($url, %context));
 };
 
-sub _add_request_to_event {
-    my ($self, $event, $url, %options) = @_;
+sub _construct_request_event {
+    my ($self, $url, %context) = @_;
 
-    $event->{'sentry.interfaces.Http'} = {
-        url          => $url,
-        method       => $options{method},
-        data         => $options{data},
-        query_string => $options{query_string},
-        cookies      => $options{cookies},
-        headers      => $options{headers},
-        env          => $options{env},
-    };
-
-    return $event;
+    return $self->_construct_event(
+        %context,
+        $self->request_context($url, %context),
+    );
 };
 
-=head2 $raven->capture_stacktrace( $frames, %options )
+=head2 $raven->capture_stacktrace( $frames, %context )
 
 Post a stacktrace to the sentry service.  Returns the event id.
 
@@ -317,19 +318,17 @@ The first frame should be the oldest frame.  Frames must contain at least one of
 =cut
 
 sub capture_stacktrace {
-    my ($self, $frames, %options) = @_;
-    my $event = $self->_add_stacktrace_to_event($self->_generate_event(%options), $frames);
-    return $self->_post_event($event);
+    my ($self, $frames, %context) = @_;
+    return $self->_post_event($self->_construct_stacktrace_event($frames, %context));
 };
 
-sub _add_stacktrace_to_event {
-    my ($self, $event, $frames) = @_;
+sub _construct_stacktrace_event {
+    my ($self, $frames, %context) = @_;
 
-    $event->{'sentry.interfaces.Stacktrace'} = {
-        frames => $frames,
-    };
-
-    return $event;
+    return $self->_construct_event(
+        %context,
+        $self->stacktrace_context($frames),
+    );
 };
 
 sub _post_event {
@@ -366,24 +365,31 @@ sub _generate_id {
     return $uuid;
 }
 
-sub _generate_event {
-    my ($self, %options) = @_;
+sub _construct_event {
+    my ($self, %context) = @_;
 
-    return {
-        event_id    => $options{event_id}    || $self->options()->{event_id}    || _generate_id(),
-        timestamp   => $options{timestamp}   || $self->options()->{timestamp}   || DateTime->now()->iso8601(),
-        logger      => $options{logger}      || $self->options()->{logger}      || 'root',
-        server_name => $options{server_name} || $self->options()->{server_name} || hostname(),
-        platform    => $options{platform}    || $self->options()->{platform}    || 'perl',
+    my $event = {
+        event_id    => $context{event_id}    || $self->context()->{event_id}    || _generate_id(),
+        timestamp   => $context{timestamp}   || $self->context()->{timestamp}   || DateTime->now()->iso8601(),
+        logger      => $context{logger}      || $self->context()->{logger}      || 'root',
+        server_name => $context{server_name} || $self->context()->{server_name} || hostname(),
+        platform    => $context{platform}    || $self->context()->{platform}    || 'perl',
 
-        message     => $options{message}     || $self->options()->{message},
-        culprit     => $options{culprit}     || $self->options()->{culprit},
+        message     => $context{message}     || $self->context()->{message},
+        culprit     => $context{culprit}     || $self->context()->{culprit},
 
-        extra       => $self->_merge_hashrefs($self->options()->{extra}, $options{extra}),
-        tags        => $self->_merge_hashrefs($self->options()->{tags}, $options{tags}),
+        extra       => $self->_merge_hashrefs($self->context()->{extra}, $context{extra}),
+        tags        => $self->_merge_hashrefs($self->context()->{tags}, $context{tags}),
 
-        level       => $self->_validate_level($options{level}) || $self->options()->{level} || 'error',
+        level       => $self->_validate_level($context{level}) || $self->context()->{level} || 'error',
     };
+
+    foreach my $interface (@{ $self->valid_interfaces() }) {
+        $event->{$interface} = $context{$interface}
+            if $context{$interface};
+    }
+
+    return $event;
 }
 
 sub _merge_hashrefs {
@@ -428,13 +434,67 @@ sub _generate_auth_header {
 sub _build_json_obj { JSON::XS->new()->utf8(1)->pretty(1)->allow_nonref(1) }
 sub _build_ua_obj { LWP::UserAgent->new() }
 
-=head1 EVENT ANNOTATORS
+=head1 EVENT CONTEXT
 
-These methods are for annotating events by adding additional items, such as stack traces or HTTP requests.
+These methods are for annotating events with additional context, such as stack traces or HTTP requests.  Simply pass their output to any other method accepting C<%context>.  They accept all of the same arguments as their C<capture_*> counterparts.
+
+  $raven->capture_message(
+    'The sky is falling',
+    $raven->exception_context('SkyException', 'falling'),
+  );
+
+=head2 $raven->exception_context( $type, $value )
+
+=cut
+
+sub exception_context {
+    my ($self, $type, $value) = @_;
+
+    return (
+        'sentry.interfaces.Exception' => {
+            type  => $type,
+            value => $value,
+        }
+    );
+};
+
+=head2 $raven->request_context( $url, %request_context )
+
+=cut
+
+sub request_context {
+    my ($self, $url, %context) = @_;
+
+    return (
+        'sentry.interfaces.Http' => {
+            url          => $url,
+            method       => $context{method},
+            data         => $context{data},
+            query_string => $context{query_string},
+            cookies      => $context{cookies},
+            headers      => $context{headers},
+            env          => $context{env},
+        }
+    );
+};
+
+=head2 $raven->stacktrace_context( $frames )
+
+=cut
+
+sub stacktrace_context {
+    my ($self, $frames) = @_;
+
+    return (
+        'sentry.interfaces.Stacktrace' => {
+            frames => $frames,
+        }
+    );
+};
 
 =head1 STANDARD OPTIONS
 
-These options can be passed to all methods accepting %options.  Passing these options to the constructor overrides defaults.
+These options can be passed to all methods accepting %context.  Passing context to the constructor overrides defaults.
 
 =over 4
 
