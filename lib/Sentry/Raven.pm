@@ -108,6 +108,7 @@ has valid_interfaces => (
     default => sub { [qw/
         sentry.interfaces.Exception sentry.interfaces.Http
         sentry.interfaces.Stacktrace sentry.interfaces.User
+        sentry.interfaces.Query
     /] },
 );
 
@@ -366,6 +367,34 @@ sub _construct_user_event {
     );
 };
 
+=head2 $raven->capture_query( $query, %query_context, %context )
+
+Post a query to the sentry service.  Returns the event id.
+
+C<%query_context> can contain:
+
+=over
+
+=item I<engine =E<gt> $engine'>
+
+=back
+
+=cut
+
+sub capture_query {
+    my ($self, $query, %context) = @_;
+    return $self->_post_event($self->_construct_query_event($query, %context));
+};
+
+sub _construct_query_event {
+    my ($self, $query, %context) = @_;
+
+    return $self->_construct_event(
+        %context,
+        $self->query_context($query, %context),
+    );
+};
+
 sub _post_event {
     my ($self, $event) = @_;
 
@@ -539,6 +568,21 @@ sub user_context {
             email    => $user_context{email},
             id       => $user_context{id},
             username => $user_context{username},
+        }
+    );
+};
+
+=head2 $raven->query_context( $query, %query_context )
+
+=cut
+
+sub query_context {
+    my ($self, $query, %query_context) = @_;
+
+    return (
+        'sentry.interfaces.Query' => {
+            query  => $query,
+            engine => $query_context{engine},
         }
     );
 };

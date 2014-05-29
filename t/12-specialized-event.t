@@ -100,4 +100,17 @@ subtest 'user' => sub {
     );
 };
 
+subtest 'query' => sub {
+    my $event = $raven->_construct_query_event( 'select 1', engine => 'DBD::Pg', level => 'info');
+
+    is($event->{level}, 'info');
+    is_deeply(
+        $event->{'sentry.interfaces.Query'},
+        {
+            query  => 'select 1',
+            engine => 'DBD::Pg',
+        },
+    );
+};
+
 done_testing();

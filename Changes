@@ -1,3 +1,8 @@
+0.03 2014-05-28
+ - Context decorators
+ - Post users (sentry interface type)
+ - Post queries (sentry interface type)
+
 0.02 2014-05-23
  - Override event defaults in the constructor
  - Automatically post stack traces with the error handler
