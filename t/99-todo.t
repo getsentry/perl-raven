@@ -15,6 +15,8 @@ TODO: {
     ok(undef, 'supports updating default context after construction');
 
     ok(undef, 'mason handler');
+
+    ok(undef, 'add LWP::Protocol::https to suggested packages');
 }
 
 done_testing();

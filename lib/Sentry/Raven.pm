@@ -39,7 +39,7 @@ Version 0.02
   # annotate an event with context
   $raven->capture_message(
     'The sky is falling',
-    $raven->exception_context('SkyException', 'falling'),
+    Sentry::Raven->exception_context('SkyException', 'falling'),
   );
 
 =head1 DESCRIPTION
@@ -504,15 +504,15 @@ These methods are for annotating events with additional context, such as stack t
 
   $raven->capture_message(
     'The sky is falling',
-    $raven->exception_context('SkyException', 'falling'),
+    Sentry::Raven->exception_context('SkyException', 'falling'),
   );
 
-=head2 $raven->exception_context( $type, $value )
+=head2 Sentry::Raven->exception_context( $type, $value )
 
 =cut
 
 sub exception_context {
-    my ($self, $type, $value) = @_;
+    my ($class, $type, $value) = @_;
 
     return (
         'sentry.interfaces.Exception' => {
@@ -522,12 +522,12 @@ sub exception_context {
     );
 };
 
-=head2 $raven->request_context( $url, %request_context )
+=head2 Sentry::Raven->request_context( $url, %request_context )
 
 =cut
 
 sub request_context {
-    my ($self, $url, %context) = @_;
+    my ($class, $url, %context) = @_;
 
     return (
         'sentry.interfaces.Http' => {
@@ -542,12 +542,12 @@ sub request_context {
     );
 };
 
-=head2 $raven->stacktrace_context( $frames )
+=head2 Sentry::Raven->stacktrace_context( $frames )
 
 =cut
 
 sub stacktrace_context {
-    my ($self, $frames) = @_;
+    my ($class, $frames) = @_;
 
     return (
         'sentry.interfaces.Stacktrace' => {
@@ -556,12 +556,12 @@ sub stacktrace_context {
     );
 };
 
-=head2 $raven->user_context( %user_context )
+=head2 Sentry::Raven->user_context( %user_context )
 
 =cut
 
 sub user_context {
-    my ($self, %user_context) = @_;
+    my ($class, %user_context) = @_;
 
     return (
         'sentry.interfaces.User' => {
@@ -572,12 +572,12 @@ sub user_context {
     );
 };
 
-=head2 $raven->query_context( $query, %query_context )
+=head2 Sentry::Raven->query_context( $query, %query_context )
 
 =cut
 
 sub query_context {
-    my ($self, $query, %query_context) = @_;
+    my ($class, $query, %query_context) = @_;
 
     return (
         'sentry.interfaces.Query' => {
