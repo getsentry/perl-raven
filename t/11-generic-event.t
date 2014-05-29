@@ -78,6 +78,31 @@ subtest 'modifying defaults' => sub {
     is($event->{event_id}, 'myeventid');
     is($event->{timestamp}, 'mytimestamp');
     is($event->{server_name}, 'myservername');
+
+
+    $raven->add_context(
+        level  => 'error',
+        logger => 'yourlogger',
+    );
+
+    $event = $raven->_construct_event();
+
+    is($event->{level}, 'error');
+    is($event->{logger}, 'yourlogger');
+
+
+    my %context = $raven->get_context();
+
+    is($context{level}, 'error');
+    is($context{logger}, 'yourlogger');
+
+
+    $raven->clear_context();
+
+    %context = $raven->get_context();
+
+    is($context{level}, undef);
+    is($context{logger}, undef);
 };
 
 subtest 'overriding defaults' => sub {

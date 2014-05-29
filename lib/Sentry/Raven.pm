@@ -113,7 +113,7 @@ has valid_interfaces => (
 );
 
 has context => (
-    is      => 'ro',
+    is      => 'rw',
     isa     => HashRef[],
     default => sub { { } },
 );
@@ -594,6 +594,39 @@ sub query_context {
         }
     );
 };
+
+=pod
+
+The default context can be modified with the following accessors:
+
+=head2 my %context = $raven->get_context();
+
+=cut
+
+sub get_context {
+    my ($self) = @_;
+    return %{ $self->context() };
+};
+
+=head2 $raven->add_context( %context )
+
+=cut
+
+sub add_context {
+    my ($self, %context) = @_;
+    $self->context()->{$_} = $context{$_}
+        for keys %context;
+};
+
+=head2 $raven->clear_context()
+
+=cut
+
+sub clear_context {
+    my ($self) = @_;
+    $self->context({});
+};
+
 
 =head1 STANDARD OPTIONS
 
