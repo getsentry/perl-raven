@@ -185,7 +185,7 @@ sub capture_errors {
             $message,
             culprit => $PROGRAM_NAME,
             %context,
-            $self->exception_context('Die', $message),
+            $self->exception_context($message),
             $self->stacktrace_context(\@frames),
         );
     };
@@ -213,22 +213,30 @@ sub _construct_message_event {
     return $self->_construct_event(message => $message, %context);
 }
 
-=head2 $raven->capture_exception( $exception_type, $exception_value, %context )
+=head2 $raven->capture_exception( $exception_value, %exception_context, %context )
 
 Post an exception type and value to the sentry service.  Returns the event id.
+
+C<%exception_context> can contain:
+
+=over
+
+=item I<type =E<gt> $type>
+
+=back
 
 =cut
 
 sub capture_exception {
-    my ($self, $type, $value, %context) = @_;
-    return $self->_post_event($self->_construct_exception_event($type, $value, %context));
+    my ($self, $value, %context) = @_;
+    return $self->_post_event($self->_construct_exception_event($value, %context));
 };
 
 sub _construct_exception_event {
-    my ($self, $type, $value, %context) = @_;
+    my ($self, $value, %context) = @_;
     return $self->_construct_event(
         %context,
-        $self->exception_context($type, $value),
+        $self->exception_context($value, %context),
     );
 };
 
@@ -504,20 +512,20 @@ These methods are for annotating events with additional context, such as stack t
 
   $raven->capture_message(
     'The sky is falling',
-    Sentry::Raven->exception_context('SkyException', 'falling'),
+    Sentry::Raven->exception_context('falling', type => 'SkyException'),
   );
 
-=head2 Sentry::Raven->exception_context( $type, $value )
+=head2 Sentry::Raven->exception_context( $value, %exception_context )
 
 =cut
 
 sub exception_context {
-    my ($class, $type, $value) = @_;
+    my ($class, $value, %exception_context) = @_;
 
     return (
         'sentry.interfaces.Exception' => {
-            type  => $type,
             value => $value,
+            type  => $exception_context{type},
         }
     );
 };

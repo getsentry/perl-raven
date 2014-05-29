@@ -18,7 +18,7 @@ subtest 'message' => sub {
 };
 
 subtest 'exception' => sub {
-    my $event = $raven->_construct_exception_event('OperationFailedException', 'Operation completed successfully', level => 'info');
+    my $event = $raven->_construct_exception_event('Operation completed successfully', type => 'OperationFailedException', level => 'info');
 
     is($event->{level}, 'info');
     is_deeply(

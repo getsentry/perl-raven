@@ -43,7 +43,6 @@ is($event->{culprit}, 't/15-error-handler.t');
 like($event->{message}, qr/it was not meant to be/);
 
 subtest 'exception' => sub {
-    is($event->{'sentry.interfaces.Exception'}->{type}, 'Die');
     like($event->{'sentry.interfaces.Exception'}->{value}, qr/it was not meant to be/);
 };
 
