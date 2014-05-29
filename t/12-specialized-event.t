@@ -86,4 +86,18 @@ subtest 'stacktrace' => sub {
     );
 };
 
+subtest 'user' => sub {
+    my $event = $raven->_construct_user_event( id => 'myid', username => 'myusername', email => 'my@email.com', level => 'info');
+
+    is($event->{level}, 'info');
+    is_deeply(
+        $event->{'sentry.interfaces.User'},
+        {
+            id       => 'myid',
+            username => 'myusername',
+            email    => 'my@email.com',
+        },
+    );
+};
+
 done_testing();

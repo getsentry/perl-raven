@@ -12,7 +12,6 @@ TODO: {
     ok(undef, 'supports scrubbing callbacks');
 
     # http://sentry.readthedocs.org/en/latest/developer/interfaces/
-    ok(undef, 'supports user interface');
     ok(undef, 'supports template interface');
     ok(undef, 'supports query interface');
 

@@ -105,7 +105,10 @@ has valid_levels => (
 has valid_interfaces => (
     is      => 'ro',
     isa     => ArrayRef[Str],
-    default => sub { [qw/ sentry.interfaces.Exception sentry.interfaces.Http sentry.interfaces.Stacktrace /] },
+    default => sub { [qw/
+        sentry.interfaces.Exception sentry.interfaces.Http
+        sentry.interfaces.Stacktrace sentry.interfaces.User
+    /] },
 );
 
 has context => (
@@ -331,6 +334,38 @@ sub _construct_stacktrace_event {
     );
 };
 
+=head2 $raven->capture_user( %user_context, %context )
+
+Post a user to the sentry service.  Returns the event id.
+
+C<%user_context> can contain:
+
+=over
+
+=item I<id =E<gt> $unique_id'>
+
+=item I<username =E<gt> $username'>
+
+=item I<email =E<gt> $email'>
+
+=back
+
+=cut
+
+sub capture_user {
+    my ($self, %context) = @_;
+    return $self->_post_event($self->_construct_user_event(%context));
+};
+
+sub _construct_user_event {
+    my ($self, %context) = @_;
+
+    return $self->_construct_event(
+        %context,
+        $self->user_context(%context),
+    );
+};
+
 sub _post_event {
     my ($self, $event) = @_;
 
@@ -488,6 +523,22 @@ sub stacktrace_context {
     return (
         'sentry.interfaces.Stacktrace' => {
             frames => $frames,
+        }
+    );
+};
+
+=head2 $raven->user_context( %user_context )
+
+=cut
+
+sub user_context {
+    my ($self, %user_context) = @_;
+
+    return (
+        'sentry.interfaces.User' => {
+            email    => $user_context{email},
+            id       => $user_context{id},
+            username => $user_context{username},
         }
     );
 };
