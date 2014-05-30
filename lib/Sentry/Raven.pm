@@ -7,7 +7,9 @@ use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
 our $VERSION = '0.03';
 
+use Data::Dump 'dump';
 use DateTime;
+use Devel::StackTrace;
 use English '-no_match_vars';
 use HTTP::Status ':constants';
 use JSON::XS;
@@ -158,40 +160,59 @@ These methods are designed to capture events and handle them automatically.
 
 =head2 $raven->capture_errors( $subref, %context )
 
-Execute the $subref and report any exceptions (die) back to the sentry service.  This automatically includes a stacktrace.  This requires C<$SIG{__DIE__}> so be careful not to override it in subsequent code or error reporting will be impacted.
+Execute the $subref and report any exceptions (die) back to the sentry service.  This automatically includes a stacktrace unless C<$SIG{__DIE__}> has been overridden in subsequent code.
 
 =cut
 
 sub capture_errors {
     my ($self, $subref, %context) = @_;
 
-    local $SIG{__DIE__} = sub {
-        my ($message) = @_;
+    my ($stacktrace, $retval);
+    eval {
+        local $SIG{__DIE__} = sub { $stacktrace = Devel::StackTrace->new() };
+        $retval = $subref->();
+    };
+
+    my $eval_error = $EVAL_ERROR;
+
+    if ($eval_error) {
+        my $message = $eval_error;
         chomp($message);
 
-        my @frames;
-        my $depth = 1;
-        while (my @frame = caller($depth++)) {
-            push @frames, {
-                module   => $frame[0],
-                filename => $frame[1],
-                lineno   => $frame[2],
-                function => $frame[3],
-            };
-        }
-        @frames = reverse @frames;
+        my %stacktrace_context = $stacktrace
+            ? $self->stacktrace_context($self->_get_frames_from_devel_stacktrace($stacktrace))
+            : ();
 
         $self->capture_message(
             $message,
             culprit => $PROGRAM_NAME,
             %context,
             $self->exception_context($message),
-            $self->stacktrace_context(\@frames),
+            %stacktrace_context,
         );
-    };
+    }
 
-    return $subref->();
+    return $retval;
 };
+
+sub _get_frames_from_devel_stacktrace {
+    my ($self, $stacktrace) = @_;
+    my @frames = map {
+        my $frame = $_;
+        {
+            filename => $frame->filename(),
+            function => $frame->subroutine(),
+            lineno   => $frame->line(),
+            module   => $frame->package(),
+            vars     => { args => dump($frame->args()) },
+        }
+    } $stacktrace->frames();
+
+    shift(@frames); # Devel::StackTrace->new
+    shift(@frames); # $SIG{__DIE__}->()
+
+    return [ reverse(@frames) ];
+}
 
 =head1 METHODS
 

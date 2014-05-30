@@ -27,20 +27,20 @@ sub a { b() }
 sub b { c() }
 sub c { die "it was not meant to be" }
 
-eval {
-    $raven->capture_errors(
-        sub { a() },
-        level => 'fatal',
-    );
-};
+$raven->capture_errors(
+    sub { a() },
+    level => 'fatal',
+);
 
 my $request = $ua->last_http_request_sent();
 my $json = $request->content();
 my $event = $raven->json_obj()->decode($json);
 
-is($event->{level}, 'fatal');
-is($event->{culprit}, 't/15-error-handler.t');
-like($event->{message}, qr/it was not meant to be/);
+subtest 'event' => sub {
+    is($event->{level}, 'fatal');
+    is($event->{culprit}, 't/15-error-handler.t');
+    like($event->{message}, qr/it was not meant to be/);
+};
 
 subtest 'exception' => sub {
     like($event->{'sentry.interfaces.Exception'}->{value}, qr/it was not meant to be/);
