@@ -15,6 +15,7 @@ WriteMakefile1(
         'English'                      => 0,
         'HTTP::Status'                 => 0,
         'JSON::XS'                     => 0,
+        'LWP::Protocol::https'         => 0,
         'LWP::UserAgent'               => 0,
         'Moo'                          => 0,
         'MooX::Types::MooseLike::Base' => 0,
