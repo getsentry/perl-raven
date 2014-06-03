@@ -1,3 +1,7 @@
+0.04 2014-06-02
+ - Stacktrace context now accepts Devel::StackTrace objects
+ - Improving error handler behavior and documentation
+
 0.03 2014-05-29
  - Context decorators
  - Post users (sentry interface type)
