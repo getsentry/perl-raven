@@ -28,7 +28,7 @@ my $request = $ua->last_http_request_sent();
 
 
 is(
-    $ua->last_http_request_sent()->method(),
+    $request->method(),
     'POST',
 );
 
@@ -43,6 +43,9 @@ like(
 );
 
 is($ua->last_useragent()->timeout(), 5);
+
+my $event = $raven->json_obj()->decode($request->content());
+is($event->{message}, 'HELO');
 
 $raven = Sentry::Raven->new(ua_obj => $ua, timeout => 10);
 $raven->capture_message('HELO');
