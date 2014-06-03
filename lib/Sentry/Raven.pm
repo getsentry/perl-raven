@@ -651,6 +651,28 @@ sub add_context {
         for keys %context;
 };
 
+=head2 $raven->merge_tags( %tags )
+
+Merge additional tags into any existing tags in the current context.
+
+=cut
+
+sub merge_tags {
+    my ($self, %tags) = @_;
+    $self->context()->{tags} = $self->_merge_hashrefs($self->context()->{tags}, \%tags);
+};
+
+=head2 $raven->merge_extra( %tags )
+
+Merge additional extra into any existing extra in the current context.
+
+=cut
+
+sub merge_extra {
+    my ($self, %extra) = @_;
+    $self->context()->{extra} = $self->_merge_hashrefs($self->context()->{extra}, \%extra);
+};
+
 =head2 $raven->clear_context()
 
 =cut
