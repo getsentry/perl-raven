@@ -180,7 +180,12 @@ sub capture_errors {
         chomp($message);
 
         my %stacktrace_context = $stacktrace
-            ? $self->stacktrace_context($self->_get_frames_from_devel_stacktrace($stacktrace))
+            ? $self->stacktrace_context(
+                $self->_get_frames_from_devel_stacktrace(
+                    $stacktrace,
+                    2, # ignore 2 frames: Devel::StackTrace->new, $SIG{__DIE__}->()
+                ),
+            )
             : ();
 
         $self->capture_message(
@@ -196,7 +201,10 @@ sub capture_errors {
 };
 
 sub _get_frames_from_devel_stacktrace {
-    my ($self, $stacktrace) = @_;
+    my ($self, $stacktrace, $ignore_num_frames) = @_;
+
+    $ignore_num_frames ||= 0;
+
     my @frames = map {
         my $frame = $_;
         {
@@ -208,8 +216,7 @@ sub _get_frames_from_devel_stacktrace {
         }
     } $stacktrace->frames();
 
-    shift(@frames); # Devel::StackTrace->new
-    shift(@frames); # $SIG{__DIE__}->()
+    shift(@frames) while ($ignore_num_frames--);
 
     return [ reverse(@frames) ];
 }
@@ -303,7 +310,7 @@ sub _construct_request_event {
 
 Post a stacktrace to the sentry service.  Returns the event id.
 
-C<$frames> is an arrayref of hashrefs with each hashref representing a single frame.
+C<$frames> can be either a Devel::StackTrace object, or an arrayref of hashrefs with each hashref representing a single frame.
 
     my $frames = [
         {
@@ -577,6 +584,11 @@ sub request_context {
 
 sub stacktrace_context {
     my ($class, $frames) = @_;
+
+    eval {
+        $frames = $class->_get_frames_from_devel_stacktrace($frames)
+            if $frames->isa('Devel::StackTrace');
+    };
 
     return (
         'sentry.interfaces.Stacktrace' => {
