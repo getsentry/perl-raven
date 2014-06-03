@@ -1,0 +1,36 @@
+package Sentry::Raven::Processor;
+
+use strict;
+
+=head1 NAME
+
+Sentry::Raven::Processor - Sentry event processors
+
+=head1 SYNOPSIS
+
+  use Sentry::Raven;
+  use Sentry::Raven::Processor::RemoveStackVariables;
+
+  my $raven = Sentry::Raven->new(
+    processors => [ Sentry::Raven::Processor::RemoveStackVariables ],
+  );
+
+=head1 DESCRIPTION
+
+Processors are a mechanism for modifying events after they are generated but before they are posted to the sentry service.  They are useful for scrubbing sensitive data, such as passwords, as well as adding additional context.
+
+=cut
+
+=head1 STANDARD PROCESSORS
+
+=head1 IMPLEMENTING A PROCESSOR
+
+Processors must have the following class methods:
+
+=head2 $processed_event = My::Processor->process($event)
+
+This is the interface for processing events.  Returns a modified version of the event.
+
+=cut
+
+1;

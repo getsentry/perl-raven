@@ -120,11 +120,19 @@ has context => (
     default => sub { { } },
 );
 
+has processors => (
+    is      => 'rw',
+    isa     => ArrayRef[],
+    default => sub { [] },
+);
+
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
 
     my $sentry_dsn = $ENV{SENTRY_DSN} || $args{sentry_dsn}
         or die "must pass sentry_dsn or set SENTRY_DSN envirionment variable\n";
+
+    delete($args{sentry_dsn});
 
     my $uri = URI->new($sentry_dsn);
 
@@ -143,14 +151,19 @@ around BUILDARGS => sub {
         join('/', @path).'/api/'.$project_id.'/store/'
     ;
 
+    my $timeout = delete($args{timeout});
+    my $ua_obj = delete($args{ua_obj});
+    my $processors = delete($args{processors}) || [];
+
     return $class->$orig(
         post_url   => $post_url,
         public_key => $public_key,
         secret_key => $secret_key,
         context    => \%args,
+        processors => $processors,
 
-        (defined($args{timeout}) ? (timeout => $args{timeout}) : ()),
-        (defined($args{ua_obj})  ? (ua_obj  => $args{ua_obj})  : ()),
+        (defined($timeout) ? (timeout => $timeout) : ()),
+        (defined($ua_obj) ? (ua_obj => $ua_obj) : ()),
     );
 };
 
@@ -434,6 +447,13 @@ sub _construct_query_event {
 sub _post_event {
     my ($self, $event) = @_;
 
+    $event = $self->_process_event($event);
+
+    if (!defined($event)) {
+        warn "event has disappeared after processing";
+        return;
+    }
+
     my ($response_code, $content);
 
     eval {
@@ -458,6 +478,17 @@ sub _post_event {
     } else {
         return;
     }
+}
+
+sub _process_event {
+    my ($self, $event) = @_;
+
+    foreach my $processor (@{$self->processors()}) {
+        $event = $processor->process($event);
+        return unless $event;
+    }
+
+    return $event;
 }
 
 sub _generate_id {
@@ -682,6 +713,33 @@ sub clear_context {
     $self->context({});
 };
 
+=head1 EVENT PROCESSORS
+
+Processors are a mechanism for modifying events after they are generated but before they are posted to the sentry service.  They are useful for scrubbing sensitive data, such as passwords, as well as adding additional context.  See Sentry::Raven::Processor::Base for information on creating new processors.
+
+Available processors:
+
+=over 4
+
+=back
+
+=head2 $raven->add_processors( [ Sentry::Raven::Processor::SomeProcessor, ... ] )
+
+=cut
+
+sub add_processors {
+    my ($self, @processors) = @_;
+    push @{ $self->processors() }, @processors;
+};
+
+=head2 $raven->clear_processors( [ Sentry::Raven::Processor::SomeProcessor, ... ] )
+
+=cut
+
+sub clear_processors {
+    my ($self) = @_;
+    $self->processors([]);
+};
 
 =head1 STANDARD OPTIONS
 
@@ -712,6 +770,10 @@ The creator of an event.  Defaults to 'root'.
 =item I<platform =E<gt> 'perl'>
 
 The platform (language) in which an event occurred.  Defaults to C<perl>.
+
+=item I<processors =E<gt> [ Sentry::Raven::Processor::SomeProcessor, ... ]>
+
+A set or processors to be applied to events before they are posted.  See Sentry::Raven::Processor::Base for more information.  This can only be set during construction and not on other methods accepting %context.
 
 =item I<server_name =E<gt> 'localhost.example.com'>
 
