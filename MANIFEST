@@ -1,7 +1,7 @@
 Changes
 INSTALL
 lib/Sentry/Raven.pm
-lib/Sentry/Raven/Processor.pm
+lib/Sentry/Raven/Processor.pod
 lib/Sentry/Raven/Processor/RemoveStackVariables.pm
 LICENSE
 Makefile.PL

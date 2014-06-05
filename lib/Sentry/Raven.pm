@@ -54,7 +54,7 @@ This module implements the recommended raven interface for posting events to a s
 
 Create a new sentry interface object.  It accepts the following named options:
 
-=over 4
+=over
 
 =item I<sentry_dsn =E<gt> C<'http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>'>>
 
@@ -715,15 +715,17 @@ sub clear_context {
 
 =head1 EVENT PROCESSORS
 
-Processors are a mechanism for modifying events after they are generated but before they are posted to the sentry service.  They are useful for scrubbing sensitive data, such as passwords, as well as adding additional context.  See Sentry::Raven::Processor::Base for information on creating new processors.
+Processors are a mechanism for modifying events after they are generated but before they are posted to the sentry service.  They are useful for scrubbing sensitive data, such as passwords, as well as adding additional context.  See L<Sentry::Raven::Processor> for information on creating new processors.
 
 Available processors:
 
-=over 4
+=over
+
+=item L<Sentry::Raven::Processor::RemoveStackVariables>
 
 =back
 
-=head2 $raven->add_processors( [ Sentry::Raven::Processor::SomeProcessor, ... ] )
+=head2 $raven->add_processors( [ Sentry::Raven::Processor::RemoveStackVariables, ... ] )
 
 =cut
 
@@ -732,7 +734,7 @@ sub add_processors {
     push @{ $self->processors() }, @processors;
 };
 
-=head2 $raven->clear_processors( [ Sentry::Raven::Processor::SomeProcessor, ... ] )
+=head2 $raven->clear_processors( [ Sentry::Raven::Processor::RemoveStackVariables, ... ] )
 
 =cut
 
@@ -745,7 +747,7 @@ sub clear_processors {
 
 These options can be passed to all methods accepting %context.  Passing context to the constructor overrides defaults.
 
-=over 4
+=over
 
 =item I<culprit =E<gt> 'Some::Software'>
 
@@ -771,9 +773,9 @@ The creator of an event.  Defaults to 'root'.
 
 The platform (language) in which an event occurred.  Defaults to C<perl>.
 
-=item I<processors =E<gt> [ Sentry::Raven::Processor::SomeProcessor, ... ]>
+=item I<processors =E<gt> [ Sentry::Raven::Processor::RemoveStackVariables, ... ]>
 
-A set or processors to be applied to events before they are posted.  See Sentry::Raven::Processor::Base for more information.  This can only be set during construction and not on other methods accepting %context.
+A set or processors to be applied to events before they are posted.  See L<Sentry::Raven::Processor> for more information.  This can only be set during construction and not on other methods accepting %context.
 
 =item I<server_name =E<gt> 'localhost.example.com'>
 
@@ -791,7 +793,7 @@ Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-=over 4
+=over
 
 =item SENTRY_DSN=C<http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>>
 
