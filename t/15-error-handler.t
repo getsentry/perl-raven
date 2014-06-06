@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More;
 
+use English '-no_match_vars';
 use HTTP::Response;
 use Sentry::Raven;
 use Test::LWP::UserAgent;
@@ -54,7 +55,26 @@ subtest 'stacktrace' => sub {
     is($frames[-1]->{function}, 'main::c');
     is($frames[-1]->{module}, 'main');
     is($frames[-1]->{filename}, 't/15-error-handler.t');
-    is($frames[-1]->{lineno}, 27);
+    is($frames[-1]->{lineno}, 28);
+};
+
+subtest 'dies when unable to submit event' => sub {
+    my $failing_ua = Test::LWP::UserAgent->new();
+    $failing_ua->map_response(
+        qr//,
+        HTTP::Response->new(
+            '500',
+        ),
+    );
+
+    eval {
+        Sentry::Raven->new(ua_obj => $failing_ua)->capture_errors( sub { a() } );
+    };
+
+    my $eval_error = $EVAL_ERROR;
+
+    like($eval_error, qr/failed to submit event to sentry service/);
+    like($eval_error, qr/"level" => "error"/);
 };
 
 done_testing();

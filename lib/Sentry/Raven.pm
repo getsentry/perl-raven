@@ -173,7 +173,7 @@ These methods are designed to capture events and handle them automatically.
 
 =head2 $raven->capture_errors( $subref, %context )
 
-Execute the $subref and report any exceptions (die) back to the sentry service.  This automatically includes a stacktrace unless C<$SIG{__DIE__}> has been overridden in subsequent code.
+Execute the $subref and report any exceptions (die) back to the sentry service.  If it is unable to submit an event (capture_message return undef), it will die and include the event details in the die message.  This automatically includes a stacktrace unless C<$SIG{__DIE__}> has been overridden in subsequent code.
 
 =cut
 
@@ -201,13 +201,18 @@ sub capture_errors {
             )
             : ();
 
-        $self->capture_message(
-            $message,
+        %context = (
             culprit => $PROGRAM_NAME,
             %context,
             $self->exception_context($message),
             %stacktrace_context,
         );
+
+        my $event_id = $self->capture_message($message, %context);
+
+        if (!defined($event_id)) {
+            die "failed to submit event to sentry service:\n" . dump($self->_construct_message_event($message, %context));
+        }
     }
 
     return $retval;
