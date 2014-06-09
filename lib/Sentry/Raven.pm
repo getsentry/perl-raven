@@ -461,11 +461,6 @@ sub _post_event {
 
     $event = $self->_process_event($event);
 
-    if (!defined($event)) {
-        warn "event has disappeared after processing";
-        return;
-    }
-
     my ($response_code, $content);
 
     eval {
@@ -496,8 +491,12 @@ sub _process_event {
     my ($self, $event) = @_;
 
     foreach my $processor (@{$self->processors()}) {
-        $event = $processor->process($event);
-        return unless $event;
+        my $processed_event = $processor->process($event);
+        if ($processed_event) {
+            $event = $processed_event;
+        } else {
+            die "processor $processor did not return an event";
+        }
     }
 
     return $event;
@@ -727,7 +726,9 @@ sub clear_context {
 
 =head1 EVENT PROCESSORS
 
-Processors are a mechanism for modifying events after they are generated but before they are posted to the sentry service.  They are useful for scrubbing sensitive data, such as passwords, as well as adding additional context.  See L<Sentry::Raven::Processor> for information on creating new processors.
+Processors are a mechanism for modifying events after they are generated but before they are posted to the sentry service.  They are useful for scrubbing sensitive data, such as passwords, as well as adding additional context.  If the processor fails (dies or returns undef), the failure will be passed to the caller.
+
+See L<Sentry::Raven::Processor> for information on creating new processors.
 
 Available processors:
 
