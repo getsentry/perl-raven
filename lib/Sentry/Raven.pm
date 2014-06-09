@@ -180,10 +180,17 @@ Execute the $subref and report any exceptions (die) back to the sentry service. 
 sub capture_errors {
     my ($self, $subref, %context) = @_;
 
-    my ($stacktrace, $retval);
+    my $wantarray = wantarray();
+
+    my ($stacktrace, @retval);
     eval {
         local $SIG{__DIE__} = sub { $stacktrace = Devel::StackTrace->new() };
-        $retval = $subref->();
+
+        if ($wantarray) {
+            @retval = $subref->();
+        } else {
+            $retval[0] = $subref->();
+        }
     };
 
     my $eval_error = $EVAL_ERROR;
@@ -215,7 +222,7 @@ sub capture_errors {
         }
     }
 
-    return $retval;
+    return $wantarray ? @retval : $retval[0];
 };
 
 sub _get_frames_from_devel_stacktrace {
