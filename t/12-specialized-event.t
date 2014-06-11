@@ -6,9 +6,14 @@ use warnings;
 use Test::More;
 
 use Sentry::Raven;
+use Devel::StackTrace;
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new();
+
+my $trace;
+sub a { $trace = Devel::StackTrace->new() }
+a();
 
 subtest 'message' => sub {
     my $event = $raven->_construct_message_event('mymessage', level => 'info');
@@ -83,6 +88,37 @@ subtest 'stacktrace' => sub {
     is_deeply(
         $event->{'sentry.interfaces.Stacktrace'},
         { frames => $frames },
+    );
+
+    $frames = [
+        {
+            filename => 't/12-specialized-event.t',
+            function => 'main::a',
+            lineno   => 16,
+            module   => 'main',
+            vars     => {
+                args => '()'
+            },
+        },
+        {
+            filename => 't/12-specialized-event.t',
+            function => 'Devel::StackTrace::new',
+            lineno   => 15,
+            module   => 'main',
+            vars     => {
+                args => '"Devel::StackTrace"'
+            },
+        },
+    ];
+
+    is_deeply(
+        $raven->_construct_stacktrace_event($trace)->{'sentry.interfaces.Stacktrace'},
+        { frames => $frames },
+    );
+
+    is_deeply(
+        $raven->_get_frames_from_devel_stacktrace($trace, 1),
+        [ $frames->[0] ],
     );
 };
 

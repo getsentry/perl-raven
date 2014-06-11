@@ -1,6 +1,8 @@
 Changes
 INSTALL
 lib/Sentry/Raven.pm
+lib/Sentry/Raven/Processor.pod
+lib/Sentry/Raven/Processor/RemoveStackVariables.pm
 LICENSE
 Makefile.PL
 MANIFEST
@@ -12,6 +14,7 @@ t/12-specialized-event.t
 t/13-service-call.t
 t/14-does-not-die.t
 t/15-error-handler.t
+t/16-processors.t
 t/90-perl-critic.t
 t/91-pod-coverage.t
 t/92-pod-syntax.t

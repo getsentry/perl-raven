@@ -5,9 +5,11 @@ use strict;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
+use Data::Dump 'dump';
 use DateTime;
+use Devel::StackTrace;
 use English '-no_match_vars';
 use HTTP::Status ':constants';
 use JSON::XS;
@@ -22,7 +24,7 @@ Sentry::Raven - A perl sentry client
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =head1 SYNOPSIS
 
@@ -52,7 +54,7 @@ This module implements the recommended raven interface for posting events to a s
 
 Create a new sentry interface object.  It accepts the following named options:
 
-=over 4
+=over
 
 =item I<sentry_dsn =E<gt> C<'http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>'>>
 
@@ -118,11 +120,19 @@ has context => (
     default => sub { { } },
 );
 
+has processors => (
+    is      => 'rw',
+    isa     => ArrayRef[],
+    default => sub { [] },
+);
+
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
 
     my $sentry_dsn = $ENV{SENTRY_DSN} || $args{sentry_dsn}
         or die "must pass sentry_dsn or set SENTRY_DSN envirionment variable\n";
+
+    delete($args{sentry_dsn});
 
     my $uri = URI->new($sentry_dsn);
 
@@ -141,14 +151,19 @@ around BUILDARGS => sub {
         join('/', @path).'/api/'.$project_id.'/store/'
     ;
 
+    my $timeout = delete($args{timeout});
+    my $ua_obj = delete($args{ua_obj});
+    my $processors = delete($args{processors}) || [];
+
     return $class->$orig(
         post_url   => $post_url,
         public_key => $public_key,
         secret_key => $secret_key,
         context    => \%args,
+        processors => $processors,
 
-        (defined($args{timeout}) ? (timeout => $args{timeout}) : ()),
-        (defined($args{ua_obj})  ? (ua_obj  => $args{ua_obj})  : ()),
+        (defined($timeout) ? (timeout => $timeout) : ()),
+        (defined($ua_obj) ? (ua_obj => $ua_obj) : ()),
     );
 };
 
@@ -158,40 +173,78 @@ These methods are designed to capture events and handle them automatically.
 
 =head2 $raven->capture_errors( $subref, %context )
 
-Execute the $subref and report any exceptions (die) back to the sentry service.  This automatically includes a stacktrace.  This requires C<$SIG{__DIE__}> so be careful not to override it in subsequent code or error reporting will be impacted.
+Execute the $subref and report any exceptions (die) back to the sentry service.  If it is unable to submit an event (capture_message return undef), it will die and include the event details in the die message.  This automatically includes a stacktrace unless C<$SIG{__DIE__}> has been overridden in subsequent code.
 
 =cut
 
 sub capture_errors {
     my ($self, $subref, %context) = @_;
 
-    local $SIG{__DIE__} = sub {
-        my ($message) = @_;
+    my $wantarray = wantarray();
+
+    my ($stacktrace, @retval);
+    eval {
+        local $SIG{__DIE__} = sub { $stacktrace = Devel::StackTrace->new() };
+
+        if ($wantarray) {
+            @retval = $subref->();
+        } else {
+            $retval[0] = $subref->();
+        }
+    };
+
+    my $eval_error = $EVAL_ERROR;
+
+    if ($eval_error) {
+        my $message = $eval_error;
         chomp($message);
 
-        my @frames;
-        my $depth = 1;
-        while (my @frame = caller($depth++)) {
-            push @frames, {
-                module   => $frame[0],
-                filename => $frame[1],
-                lineno   => $frame[2],
-                function => $frame[3],
-            };
-        }
-        @frames = reverse @frames;
+        my %stacktrace_context = $stacktrace
+            ? $self->stacktrace_context(
+                $self->_get_frames_from_devel_stacktrace(
+                    $stacktrace,
+                    2, # ignore 2 frames: Devel::StackTrace->new, $SIG{__DIE__}->()
+                ),
+            )
+            : ();
 
-        $self->capture_message(
-            $message,
+        %context = (
             culprit => $PROGRAM_NAME,
             %context,
             $self->exception_context($message),
-            $self->stacktrace_context(\@frames),
+            %stacktrace_context,
         );
-    };
 
-    return $subref->();
+        my $event_id = $self->capture_message($message, %context);
+
+        if (!defined($event_id)) {
+            die "failed to submit event to sentry service:\n" . dump($self->_construct_message_event($message, %context));
+        }
+    }
+
+    return $wantarray ? @retval : $retval[0];
 };
+
+sub _get_frames_from_devel_stacktrace {
+    my ($self, $stacktrace, $ignore_num_frames) = @_;
+
+    $ignore_num_frames ||= 0;
+
+    my @frames = map {
+        my $frame = $_;
+        {
+            filename => $frame->filename(),
+            function => $frame->subroutine(),
+            lineno   => $frame->line(),
+            module   => $frame->package(),
+            vars     => { args => dump($frame->args()) },
+        }
+    } $stacktrace->frames();
+
+    shift(@frames) while ($ignore_num_frames--);
+
+    return [ reverse(@frames) ];
+}
 
 =head1 METHODS
 
@@ -282,7 +335,7 @@ sub _construct_request_event {
 
 Post a stacktrace to the sentry service.  Returns the event id.
 
-C<$frames> is an arrayref of hashrefs with each hashref representing a single frame.
+C<$frames> can be either a Devel::StackTrace object, or an arrayref of hashrefs with each hashref representing a single frame.
 
     my $frames = [
         {
@@ -406,6 +459,8 @@ sub _construct_query_event {
 sub _post_event {
     my ($self, $event) = @_;
 
+    $event = $self->_process_event($event);
+
     my ($response_code, $content);
 
     eval {
@@ -430,6 +485,21 @@ sub _post_event {
     } else {
         return;
     }
+}
+
+sub _process_event {
+    my ($self, $event) = @_;
+
+    foreach my $processor (@{$self->processors()}) {
+        my $processed_event = $processor->process($event);
+        if ($processed_event) {
+            $event = $processed_event;
+        } else {
+            die "processor $processor did not return an event";
+        }
+    }
+
+    return $event;
 }
 
 sub _generate_id {
@@ -557,6 +627,11 @@ sub request_context {
 sub stacktrace_context {
     my ($class, $frames) = @_;
 
+    eval {
+        $frames = $class->_get_frames_from_devel_stacktrace($frames)
+            if $frames->isa('Devel::StackTrace');
+    };
+
     return (
         'sentry.interfaces.Stacktrace' => {
             frames => $frames,
@@ -618,6 +693,28 @@ sub add_context {
         for keys %context;
 };
 
+=head2 $raven->merge_tags( %tags )
+
+Merge additional tags into any existing tags in the current context.
+
+=cut
+
+sub merge_tags {
+    my ($self, %tags) = @_;
+    $self->context()->{tags} = $self->_merge_hashrefs($self->context()->{tags}, \%tags);
+};
+
+=head2 $raven->merge_extra( %tags )
+
+Merge additional extra into any existing extra in the current context.
+
+=cut
+
+sub merge_extra {
+    my ($self, %extra) = @_;
+    $self->context()->{extra} = $self->_merge_hashrefs($self->context()->{extra}, \%extra);
+};
+
 =head2 $raven->clear_context()
 
 =cut
@@ -627,12 +724,43 @@ sub clear_context {
     $self->context({});
 };
 
+=head1 EVENT PROCESSORS
+
+Processors are a mechanism for modifying events after they are generated but before they are posted to the sentry service.  They are useful for scrubbing sensitive data, such as passwords, as well as adding additional context.  If the processor fails (dies or returns undef), the failure will be passed to the caller.
+
+See L<Sentry::Raven::Processor> for information on creating new processors.
+
+Available processors:
+
+=over
+
+=item L<Sentry::Raven::Processor::RemoveStackVariables>
+
+=back
+
+=head2 $raven->add_processors( [ Sentry::Raven::Processor::RemoveStackVariables, ... ] )
+
+=cut
+
+sub add_processors {
+    my ($self, @processors) = @_;
+    push @{ $self->processors() }, @processors;
+};
+
+=head2 $raven->clear_processors( [ Sentry::Raven::Processor::RemoveStackVariables, ... ] )
+
+=cut
+
+sub clear_processors {
+    my ($self) = @_;
+    $self->processors([]);
+};
 
 =head1 STANDARD OPTIONS
 
 These options can be passed to all methods accepting %context.  Passing context to the constructor overrides defaults.
 
-=over 4
+=over
 
 =item I<culprit =E<gt> 'Some::Software'>
 
@@ -658,6 +786,10 @@ The creator of an event.  Defaults to 'root'.
 
 The platform (language) in which an event occurred.  Defaults to C<perl>.
 
+=item I<processors =E<gt> [ Sentry::Raven::Processor::RemoveStackVariables, ... ]>
+
+A set or processors to be applied to events before they are posted.  See L<Sentry::Raven::Processor> for more information.  This can only be set during construction and not on other methods accepting %context.
+
 =item I<server_name =E<gt> 'localhost.example.com'>
 
 The hostname on which an event occurred.  Defaults to the system hostname.
@@ -674,7 +806,7 @@ Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-=over 4
+=over
 
 =item SENTRY_DSN=C<http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>>
 

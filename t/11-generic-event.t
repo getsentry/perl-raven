@@ -103,6 +103,32 @@ subtest 'modifying defaults' => sub {
 
     is($context{level}, undef);
     is($context{logger}, undef);
+
+
+    $raven->add_context(tags => { a => 1, b => 2 });
+    $raven->merge_tags(a => 10, c => 30);
+
+    is_deeply(
+        $raven->context()->{tags},
+        {
+            a => 10,
+            b => 2,
+            c => 30,
+        },
+    );
+
+
+    $raven->add_context(extra => { a => 1, b => 2 });
+    $raven->merge_extra(a => 10, c => 30);
+
+    is_deeply(
+        $raven->context()->{extra},
+        {
+            a => 10,
+            b => 2,
+            c => 30,
+        },
+    );
 };
 
 subtest 'overriding defaults' => sub {
