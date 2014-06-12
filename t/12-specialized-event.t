@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More;
 
+use File::Spec;
 use Sentry::Raven;
 use Devel::StackTrace;
 
@@ -92,18 +93,18 @@ subtest 'stacktrace' => sub {
 
     $frames = [
         {
-            filename => 't/12-specialized-event.t',
+            filename => File::Spec->catfile('t', '12-specialized-event.t'),
             function => 'main::a',
-            lineno   => 16,
+            lineno   => 17,
             module   => 'main',
             vars     => {
                 args => '()'
             },
         },
         {
-            filename => 't/12-specialized-event.t',
+            filename => File::Spec->catfile('t', '12-specialized-event.t'),
             function => 'Devel::StackTrace::new',
-            lineno   => 15,
+            lineno   => 16,
             module   => 'main',
             vars     => {
                 args => '"Devel::StackTrace"'

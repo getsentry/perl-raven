@@ -6,6 +6,7 @@ use warnings;
 use Test::More;
 
 use English '-no_match_vars';
+use File::Spec;
 use HTTP::Response;
 use Sentry::Raven;
 use Test::LWP::UserAgent;
@@ -54,8 +55,8 @@ subtest 'stacktrace' => sub {
 
     is($frames[-1]->{function}, 'main::c');
     is($frames[-1]->{module}, 'main');
-    is($frames[-1]->{filename}, 't/15-error-handler.t');
-    is($frames[-1]->{lineno}, 28);
+    is($frames[-1]->{filename}, File::Spec->catfile('t', '15-error-handler.t'));
+    is($frames[-1]->{lineno}, 29);
 };
 
 subtest 'dies when unable to submit event' => sub {

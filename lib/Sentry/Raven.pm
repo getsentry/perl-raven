@@ -5,7 +5,7 @@ use strict;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use Data::Dump 'dump';
 use DateTime;
@@ -24,7 +24,7 @@ Sentry::Raven - A perl sentry client
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =head1 SYNOPSIS
 

@@ -1,4 +1,8 @@
-0.04 2014-06-02
+0.05 2014-06-12
+ - Windows test fixes
+
+0.04 2014-06-11
+ - Event processor support
  - Stacktrace context now accepts Devel::StackTrace objects
  - Improving error handler behavior and documentation
  - Better context usability for extra and tags
