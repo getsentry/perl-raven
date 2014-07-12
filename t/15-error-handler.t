@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Warn;
 
 use English '-no_match_vars';
 use HTTP::Response;
@@ -55,7 +56,7 @@ subtest 'stacktrace' => sub {
     is($frames[-1]->{function}, 'main::c');
     is($frames[-1]->{module}, 'main');
     is($frames[-1]->{filename}, 't/15-error-handler.t');
-    is($frames[-1]->{lineno}, 28);
+    is($frames[-1]->{lineno}, 29);
 };
 
 subtest 'dies when unable to submit event' => sub {
@@ -68,6 +69,7 @@ subtest 'dies when unable to submit event' => sub {
     );
 
     eval {
+        local $SIG{__WARN__} = sub{};
         Sentry::Raven->new(ua_obj => $failing_ua)->capture_errors( sub { a() } );
     };
 
@@ -76,5 +78,19 @@ subtest 'dies when unable to submit event' => sub {
     like($eval_error, qr/failed to submit event to sentry service/);
     like($eval_error, qr/"level" => "error"/);
 };
+
+subtest 'warn when unable to capture message' => sub{
+    my $failing_ua = Test::LWP::UserAgent->new();
+    $failing_ua->map_response(
+                              qr//,
+                              HTTP::Response->new(
+                                                  '500',
+                                                 ),
+                             );
+    my $raven = Sentry::Raven->new( ua_obj => $failing_ua );
+    warning_like { $raven->capture_message('Irrelevant') } qr/Unsuccessful/ , "Good warning";
+    ok(1);
+};
+
 
 done_testing();

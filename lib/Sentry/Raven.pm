@@ -461,14 +461,14 @@ sub _post_event {
 
     $event = $self->_process_event($event);
 
-    my ($response_code, $content);
+    my ($response, $response_code, $content);
 
     eval {
         my $event_json = $self->json_obj()->encode( $event );
 
         $self->ua_obj()->timeout($self->timeout());
 
-        my $response = $self->ua_obj()->post(
+        $response = $self->ua_obj()->post(
             $self->post_url(),
             'X-Sentry-Auth' => $self->_generate_auth_header(),
             Content         => $event_json,
@@ -483,6 +483,9 @@ sub _post_event {
     if (defined($response_code) && $response_code == HTTP_OK) {
         return $self->json_obj()->decode($content)->{id};
     } else {
+        if( $response ){
+            warn "Unsuccessful Response Posting Sentry Event:\n".substr($response->as_string(), 0 , 1000);
+        }
         return;
     }
 }
