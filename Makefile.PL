@@ -28,7 +28,8 @@ WriteMakefile1(
         'HTTP::Response'                    => 0,
         'Test::CPAN::Changes::ReallyStrict' => 0,
         'Test::LWP::UserAgent'              => 0,
-        'Test::More'                        => '0.88', 
+        'Test::More'                        => '0.88',
+        'Test::Warn'                        => 0.30,
         'Test::Perl::Critic'                => 0,
     },
 
