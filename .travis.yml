@@ -5,3 +5,7 @@ perl:
   - "5.12"
   - "5.10"
   - "5.8"
+
+install:
+   - cpanm --quiet --notest ExtUtils::MakeMaker
+   - cpanm --quiet --notest --installdeps .
