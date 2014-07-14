@@ -1,12 +1,13 @@
+.travis.yml
 Changes
 INSTALL
+LICENSE
+MANIFEST
+Makefile.PL
+README
 lib/Sentry/Raven.pm
 lib/Sentry/Raven/Processor.pod
 lib/Sentry/Raven/Processor/RemoveStackVariables.pm
-LICENSE
-Makefile.PL
-MANIFEST
-README
 t/00-load.t
 t/10-dsn.t
 t/11-generic-event.t
