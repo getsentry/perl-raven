@@ -25,6 +25,7 @@ WriteMakefile1(
     },
 
     TEST_REQUIRES       => {
+        'File::Spec'                        => 0,
         'HTTP::Response'                    => 0,
         'Test::CPAN::Changes::ReallyStrict' => 0,
         'Test::LWP::UserAgent'              => 0,
