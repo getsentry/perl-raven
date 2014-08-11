@@ -24,7 +24,10 @@ $ua->map_response(
 );
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
-my $raven = Sentry::Raven->new(ua_obj => $ua);
+my $raven = Sentry::Raven->new(
+    ua_obj   => $ua,
+    encoding => 'text',
+);
 
 sub a { b() }
 sub b { c() }
@@ -57,7 +60,7 @@ subtest 'stacktrace' => sub {
     is($frames[-1]->{function}, 'main::c');
     is($frames[-1]->{module}, 'main');
     is($frames[-1]->{filename}, File::Spec->catfile('t', '15-error-handler.t'));
-    is($frames[-1]->{lineno}, 30);
+    is($frames[-1]->{lineno}, 33);
 };
 
 subtest 'dies when unable to submit event' => sub {

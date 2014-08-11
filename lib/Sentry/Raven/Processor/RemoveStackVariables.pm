@@ -2,6 +2,7 @@ package Sentry::Raven::Processor::RemoveStackVariables;
 
 use 5.008;
 use strict;
+use warnings;
 
 =head1 NAME
 

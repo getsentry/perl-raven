@@ -2,16 +2,18 @@ package Sentry::Raven;
 
 use 5.008;
 use strict;
+use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Data::Dump 'dump';
 use DateTime;
 use Devel::StackTrace;
 use English '-no_match_vars';
 use HTTP::Status ':constants';
+use IO::Compress::Gzip 'gzip';
 use JSON::XS;
 use LWP::UserAgent;
 use Sys::Hostname;
@@ -24,7 +26,7 @@ Sentry::Raven - A perl sentry client
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =head1 SYNOPSIS
 
@@ -456,32 +458,47 @@ sub _construct_query_event {
     );
 };
 
+sub _compress_event_json {
+    my ($self, $event_json) = @_;
+
+    my $compressed_event_json;
+
+    gzip(\$event_json, \$compressed_event_json)
+        or die "failed to compress event";
+
+    return $compressed_event_json;
+}
+
 sub _post_event {
     my ($self, $event) = @_;
 
     $event = $self->_process_event($event);
 
-    my ($response, $response_code, $content);
+    my ($response, $response_code, $response_content);
 
     eval {
         my $event_json = $self->json_obj()->encode( $event );
+
+        $event_json = $self->_compress_event_json($event_json)
+            if $event->{encoding} eq 'gzip';
 
         $self->ua_obj()->timeout($self->timeout());
 
         $response = $self->ua_obj()->post(
             $self->post_url(),
-            'X-Sentry-Auth' => $self->_generate_auth_header(),
-            Content         => $event_json,
+            'X-Sentry-Auth'    => $self->_generate_auth_header(),
+            Content            => $event_json,
+            ($event->{encoding} eq 'gzip' ? ('Content-encoding' => 'gzip') : ()),
         );
 
         $response_code = $response->code();
-        $content = $response->content();
+        $response_content = $response->content();
     };
 
     warn "$EVAL_ERROR\n" if $EVAL_ERROR;
 
     if (defined($response_code) && $response_code == HTTP_OK) {
-        return $self->json_obj()->decode($content)->{id};
+        return $self->json_obj()->decode($response_content)->{id};
     } else {
         if ($response) {
             warn "Unsuccessful Response Posting Sentry Event:\n".substr($response->as_string(), 0 , 1000)."\n";
@@ -519,6 +536,7 @@ sub _construct_event {
         logger      => $context{logger}      || $self->context()->{logger}      || 'root',
         server_name => $context{server_name} || $self->context()->{server_name} || hostname(),
         platform    => $context{platform}    || $self->context()->{platform}    || 'perl',
+        encoding    => $context{encoding}    || $self->context()->{encoding}    || 'gzip',
 
         message     => $context{message}     || $self->context()->{message},
         culprit     => $context{culprit}     || $self->context()->{culprit},
