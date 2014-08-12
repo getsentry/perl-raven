@@ -14,6 +14,7 @@ WriteMakefile1(
         'Devel::StackTrace'            => 0,
         'English'                      => 0,
         'HTTP::Status'                 => 0,
+        'IO::Compress::Gzip'           => 0,
         'JSON::XS'                     => 0,
         'LWP::Protocol::https'         => 0,
         'LWP::UserAgent'               => 0,
@@ -27,11 +28,12 @@ WriteMakefile1(
     TEST_REQUIRES       => {
         'File::Spec'                        => 0,
         'HTTP::Response'                    => 0,
+        'IO::Uncompress::Gunzip'            => 0,
         'Test::CPAN::Changes::ReallyStrict' => 0,
         'Test::LWP::UserAgent'              => 0,
         'Test::More'                        => '0.88',
-        'Test::Warn'                        => 0.30,
         'Test::Perl::Critic'                => 0,
+        'Test::Warn'                        => 0.30,
     },
 
     META_MERGE          => {

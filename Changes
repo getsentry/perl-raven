@@ -1,3 +1,6 @@
+0.07 2014-08-11
+ - Use IO::Compress::Gzip to compress http posts
+
 0.06 2014-07-14
  - Report post errors in capture_errors
  - Added travis config
