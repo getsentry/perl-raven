@@ -6,7 +6,7 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use Data::Dump 'dump';
 use DateTime;
@@ -26,7 +26,7 @@ Sentry::Raven - A perl sentry client
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =head1 SYNOPSIS
 
