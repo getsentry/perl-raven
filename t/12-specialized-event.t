@@ -40,7 +40,7 @@ subtest 'request' => sub {
     my $event = $raven->_construct_request_event(
         'http://google.com',
         method       => 'GET',
-        data         => { foo => 'bar' },
+        data         => 'foo=bar',
         query_string => 'foo=bar',
         cookies      => 'foo=bar',
         headers      => { 'Content-Type' => 'text/html' },
@@ -54,7 +54,7 @@ subtest 'request' => sub {
         {
             url          => 'http://google.com',
             method       => 'GET',
-            data         => { foo => 'bar' },
+            data         => 'foo=bar',
             query_string => 'foo=bar',
             cookies      => 'foo=bar',
             headers      => { 'Content-Type' => 'text/html' },

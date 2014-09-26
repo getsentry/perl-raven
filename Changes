@@ -1,3 +1,7 @@
+0.08 2014-09-22
+ - Trimming fields to avoid 413 Request Entity Too Large response
+ - Fixing Http interface documentation for data field
+
 0.07 2014-08-11
  - Use IO::Compress::Gzip to compress http posts
 

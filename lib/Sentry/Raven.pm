@@ -6,7 +6,7 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use Data::Dump 'dump';
 use DateTime;
@@ -20,13 +20,44 @@ use Sys::Hostname;
 use URI;
 use UUID::Tiny ':std';
 
+# constants from server-side sentry code
+use constant {
+    MAX_CULPRIT               =>  200,
+    MAX_MESSAGE               => 2048,
+
+    MAX_EXCEPTION_TYPE        =>  128,
+    MAX_EXCEPTION_VALUE       =>  256,
+
+    MAX_HTTP_QUERY_STRING     => 1024,
+    MAX_HTTP_DATA             => 2048,
+
+    MAX_QUERY_ENGINE          =>  128,
+    MAX_QUERY_QUERY           => 1024,
+
+    MAX_STACKTRACE_FILENAME   =>  256,
+    MAX_STACKTRACE_PACKAGE    =>  256,
+    MAX_STACKTRACE_SUBROUTUNE =>  256,
+
+    MAX_USER_EMAIL            =>  128,
+    MAX_USER_ID               =>  128,
+    MAX_USER_USERNAME         =>  128,
+};
+
+# self-imposed constants
+use constant {
+    MAX_HTTP_COOKIES          => 1024,
+    MAX_HTTP_URL              => 1024,
+
+    MAX_STACKTRACE_VARS       => 1024,
+};
+
 =head1 NAME
 
 Sentry::Raven - A perl sentry client
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =head1 SYNOPSIS
 
@@ -169,6 +200,13 @@ around BUILDARGS => sub {
     );
 };
 
+sub _trim {
+    my ($string, $length) = @_;
+    return defined($string)
+        ? substr($string, 0, $length)
+        : undef;
+}
+
 =head1 ERROR HANDLERS
 
 These methods are designed to capture events and handle them automatically.
@@ -235,11 +273,11 @@ sub _get_frames_from_devel_stacktrace {
     my @frames = map {
         my $frame = $_;
         {
-            filename => $frame->filename(),
-            function => $frame->subroutine(),
+            filename => _trim($frame->filename(), MAX_STACKTRACE_FILENAME),
+            function => _trim($frame->subroutine(), MAX_STACKTRACE_SUBROUTUNE),
             lineno   => $frame->line(),
-            module   => $frame->package(),
-            vars     => { args => dump($frame->args()) },
+            module   => _trim($frame->package(), MAX_STACKTRACE_PACKAGE),
+            vars     => { args => _trim(dump($frame->args()), MAX_STACKTRACE_VARS) },
         }
     } $stacktrace->frames();
 
@@ -305,7 +343,7 @@ C<%request_context> can contain:
 
 =item I<method =E<gt> 'GET'>
 
-=item I<data =E<gt> { $key =E<gt> $value }>
+=item I<data =E<gt> 'foo=bar'>
 
 =item I<query_string =E<gt> 'foo=bar'>
 
@@ -501,7 +539,7 @@ sub _post_event {
         return $self->json_obj()->decode($response_content)->{id};
     } else {
         if ($response) {
-            warn "Unsuccessful Response Posting Sentry Event:\n".substr($response->as_string(), 0 , 1000)."\n";
+            warn "Unsuccessful Response Posting Sentry Event:\n"._trim($response->as_string(), 1000)."\n";
         }
         return;
     }
@@ -546,6 +584,9 @@ sub _construct_event {
 
         level       => $self->_validate_level($context{level}) || $self->context()->{level} || 'error',
     };
+
+    $event->{message} = _trim($event->{message}, MAX_MESSAGE);
+    $event->{culprit} = _trim($event->{culprit}, MAX_CULPRIT);
 
     foreach my $interface (@{ $self->valid_interfaces() }) {
         $event->{$interface} = $context{$interface}
@@ -615,8 +656,8 @@ sub exception_context {
 
     return (
         'sentry.interfaces.Exception' => {
-            value => $value,
-            type  => $exception_context{type},
+            value => _trim($value, MAX_EXCEPTION_VALUE),
+            type  => _trim($exception_context{type}, MAX_EXCEPTION_TYPE),
         }
     );
 };
@@ -630,11 +671,11 @@ sub request_context {
 
     return (
         'sentry.interfaces.Http' => {
-            url          => $url,
+            url          => _trim($url, MAX_HTTP_URL),
             method       => $context{method},
-            data         => $context{data},
-            query_string => $context{query_string},
-            cookies      => $context{cookies},
+            data         => _trim($context{data}, MAX_HTTP_DATA),
+            query_string => _trim($context{query_string}, MAX_HTTP_QUERY_STRING),
+            cookies      => _trim($context{cookies}, MAX_HTTP_COOKIES),
             headers      => $context{headers},
             env          => $context{env},
         }
@@ -669,9 +710,9 @@ sub user_context {
 
     return (
         'sentry.interfaces.User' => {
-            email    => $user_context{email},
-            id       => $user_context{id},
-            username => $user_context{username},
+            email    => _trim($user_context{email}, MAX_USER_EMAIL),
+            id       => _trim($user_context{id}, MAX_USER_ID),
+            username => _trim($user_context{username}, MAX_USER_USERNAME),
         }
     );
 };
@@ -685,8 +726,8 @@ sub query_context {
 
     return (
         'sentry.interfaces.Query' => {
-            query  => $query,
-            engine => $query_context{engine},
+            query  => _trim($query, MAX_QUERY_QUERY),
+            engine => _trim($query_context{engine}, MAX_QUERY_ENGINE),
         }
     );
 };
