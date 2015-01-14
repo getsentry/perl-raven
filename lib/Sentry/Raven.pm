@@ -12,8 +12,8 @@ use Data::Dump 'dump';
 use DateTime;
 use Devel::StackTrace;
 use English '-no_match_vars';
+use HTTP::Request::Common 'POST';
 use HTTP::Status ':constants';
-use IO::Compress::Gzip 'gzip';
 use JSON::XS;
 use LWP::UserAgent;
 use Sys::Hostname;
@@ -496,17 +496,6 @@ sub _construct_query_event {
     );
 };
 
-sub _compress_event_json {
-    my ($self, $event_json) = @_;
-
-    my $compressed_event_json;
-
-    gzip(\$event_json, \$compressed_event_json)
-        or die "failed to compress event";
-
-    return $compressed_event_json;
-}
-
 sub _post_event {
     my ($self, $event) = @_;
 
@@ -517,17 +506,15 @@ sub _post_event {
     eval {
         my $event_json = $self->json_obj()->encode( $event );
 
-        $event_json = $self->_compress_event_json($event_json)
-            if $event->{encoding} eq 'gzip';
-
         $self->ua_obj()->timeout($self->timeout());
 
-        $response = $self->ua_obj()->post(
+        my $request = POST(
             $self->post_url(),
             'X-Sentry-Auth'    => $self->_generate_auth_header(),
             Content            => $event_json,
-            ($event->{encoding} eq 'gzip' ? ('Content-encoding' => 'gzip') : ()),
         );
+        $request->encode( $event->{encoding} );
+        $response = $self->ua_obj()->request($request);
 
         $response_code = $response->code();
         $response_content = $response->content();
