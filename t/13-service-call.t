@@ -23,6 +23,10 @@ $ua->map_response(
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 
+subtest 'keep_alive' => sub {
+    ok(Sentry::Raven->new()->ua_obj()->conn_cache());
+};
+
 subtest 'json' => sub {
     my $raven = Sentry::Raven->new(
         ua_obj   => $ua,
@@ -55,7 +59,6 @@ subtest 'json' => sub {
 subtest 'gzip' => sub {
     my $raven = Sentry::Raven->new(
         ua_obj   => $ua,
-        encoding => 'gzip',
     );
 
     my $event_id = $raven->capture_message('HELO');
