@@ -1,3 +1,7 @@
+0.09 2015-01-20
+ - Reuse TCP connections when possible
+ - Use LWP's built-in gzip compression
+
 0.08 2014-09-22
  - Trimming fields to avoid 413 Request Entity Too Large response
  - Fixing Http interface documentation for data field
