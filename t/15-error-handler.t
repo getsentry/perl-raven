@@ -59,7 +59,8 @@ subtest 'stacktrace' => sub {
 
     is($frames[-1]->{function}, 'main::c');
     is($frames[-1]->{module}, 'main');
-    is($frames[-1]->{filename}, File::Spec->catfile('t', '15-error-handler.t'));
+    is($frames[-1]->{abs_path}, File::Spec->catfile('t', '15-error-handler.t'));
+    is($frames[-1]->{filename}, '15-error-handler.t');
     is($frames[-1]->{lineno}, 33);
 };
 
