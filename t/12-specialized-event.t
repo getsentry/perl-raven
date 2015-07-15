@@ -93,7 +93,8 @@ subtest 'stacktrace' => sub {
 
     $frames = [
         {
-            filename => File::Spec->catfile('t', '12-specialized-event.t'),
+            abs_path => File::Spec->catfile('t', '12-specialized-event.t'),
+            filename => '12-specialized-event.t',
             function => 'main::a',
             lineno   => 17,
             module   => 'main',
@@ -102,7 +103,8 @@ subtest 'stacktrace' => sub {
             },
         },
         {
-            filename => File::Spec->catfile('t', '12-specialized-event.t'),
+            abs_path => File::Spec->catfile('t', '12-specialized-event.t'),
+            filename => '12-specialized-event.t',
             function => 'Devel::StackTrace::new',
             lineno   => 16,
             module   => 'main',

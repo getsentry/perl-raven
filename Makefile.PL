@@ -13,6 +13,7 @@ WriteMakefile1(
         'DateTime'                     => 0,
         'Devel::StackTrace'            => 0,
         'English'                      => 0,
+        'File::Basename'               => 0,
         'HTTP::Request::Common'        => 0,
         'HTTP::Status'                 => 0,
         'JSON::XS'                     => 0,

@@ -6,12 +6,13 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '0.09';
+our $VERSION = '1.00';
 
 use Data::Dump 'dump';
 use DateTime;
 use Devel::StackTrace;
 use English '-no_match_vars';
+use File::Basename 'basename';
 use HTTP::Request::Common 'POST';
 use HTTP::Status ':constants';
 use JSON::XS;
@@ -57,7 +58,7 @@ Sentry::Raven - A perl sentry client
 
 =head1 VERSION
 
-Version 0.09
+Version 1.00
 
 =head1 SYNOPSIS
 
@@ -273,7 +274,8 @@ sub _get_frames_from_devel_stacktrace {
     my @frames = map {
         my $frame = $_;
         {
-            filename => _trim($frame->filename(), MAX_STACKTRACE_FILENAME),
+            abs_path => _trim($frame->filename(), MAX_STACKTRACE_FILENAME),
+            filename => _trim(basename($frame->filename()), MAX_STACKTRACE_FILENAME),
             function => _trim($frame->subroutine(), MAX_STACKTRACE_SUBROUTUNE),
             lineno   => $frame->line(),
             module   => _trim($frame->package(), MAX_STACKTRACE_PACKAGE),
