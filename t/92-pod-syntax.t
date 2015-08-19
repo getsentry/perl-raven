@@ -8,7 +8,8 @@ use Test::More;
 SKIP: {
     skip 'Skipping release tests', 1 unless $ENV{RELEASE_TESTING};
 
-    eval "use Test::Pod;";
+    require Test::Pod;
+    Test::Pod->import();
     all_pod_files_ok();
 }
 
