@@ -22,9 +22,9 @@ $ua->map_response(
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new(
-    ua_obj   => $ua,
-    encoding => 'text',
+    ua_obj => $ua,
 );
+$raven->encoding('text');
 
 subtest 'processor accessors' => sub {
     $raven->add_processors('Sentry::Raven::Processor::P1', 'Sentry::Raven::Processor::P2');

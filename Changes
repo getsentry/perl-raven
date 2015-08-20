@@ -1,3 +1,6 @@
+1.01 2015-08-20
+ - Clean up encoding error in Sentry
+
 1.00 2015-07-13
  - Major release
  - using stacktrace abs_path and filename correctly
