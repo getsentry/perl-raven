@@ -33,8 +33,8 @@ WriteMakefile1(
         'Test::CPAN::Changes::ReallyStrict' => 0,
         'Test::LWP::UserAgent'              => 0,
         'Test::More'                        => '0.88',
-        'Test::Perl::Critic'                => 0,
-        'Test::Warn'                        => 0.30,
+        'Test::Perl::Critic'                => '1.03',
+        'Test::Warn'                        => '0.30',
     },
 
     META_MERGE          => {

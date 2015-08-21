@@ -30,8 +30,8 @@ subtest 'keep_alive' => sub {
 subtest 'json' => sub {
     my $raven = Sentry::Raven->new(
         ua_obj   => $ua,
-        encoding => 'text',
     );
+    $raven->encoding('text');
     my $event_id = $raven->capture_message('HELO');
     my $request = $ua->last_http_request_sent();
 

@@ -6,7 +6,7 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 use Data::Dump 'dump';
 use DateTime;
@@ -158,6 +158,12 @@ has processors => (
     is      => 'rw',
     isa     => ArrayRef[],
     default => sub { [] },
+);
+
+has encoding => (
+    is      => 'rw',
+    isa     => Str,
+    default => 'gzip',
 );
 
 around BUILDARGS => sub {
@@ -515,7 +521,7 @@ sub _post_event {
             'X-Sentry-Auth'    => $self->_generate_auth_header(),
             Content            => $event_json,
         );
-        $request->encode( $event->{encoding} );
+        $request->encode( $self->encoding() );
         $response = $self->ua_obj()->request($request);
 
         $response_code = $response->code();
@@ -563,7 +569,6 @@ sub _construct_event {
         logger      => $context{logger}      || $self->context()->{logger}      || 'root',
         server_name => $context{server_name} || $self->context()->{server_name} || hostname(),
         platform    => $context{platform}    || $self->context()->{platform}    || 'perl',
-        encoding    => $context{encoding}    || $self->context()->{encoding}    || 'gzip',
 
         message     => $context{message}     || $self->context()->{message},
         culprit     => $context{culprit}     || $self->context()->{culprit},

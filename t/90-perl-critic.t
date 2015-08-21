@@ -19,4 +19,4 @@ SKIP: {
     all_critic_ok();
 }
 
-done_testing();
+done_testing() unless $ENV{RELEASE_TESTING};

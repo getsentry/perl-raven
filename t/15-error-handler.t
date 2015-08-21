@@ -26,8 +26,8 @@ $ua->map_response(
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new(
     ua_obj   => $ua,
-    encoding => 'text',
 );
+$raven->encoding('text');
 
 sub a { b() }
 sub b { c() }
