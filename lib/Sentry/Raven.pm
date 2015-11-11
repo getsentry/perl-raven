@@ -285,7 +285,11 @@ sub _get_frames_from_devel_stacktrace {
             function => _trim($frame->subroutine(), MAX_STACKTRACE_SUBROUTUNE),
             lineno   => $frame->line(),
             module   => _trim($frame->package(), MAX_STACKTRACE_PACKAGE),
-            vars     => { args => _trim(dump($frame->args()), MAX_STACKTRACE_VARS) },
+            vars     => {
+                '@_' => [
+                    map { _trim(dump($_), MAX_STACKTRACE_VARS) } $frame->args(),
+                ],
+            },
         }
     } $stacktrace->frames();
 

@@ -14,7 +14,7 @@ my $raven = Sentry::Raven->new();
 
 my $trace;
 sub a { $trace = Devel::StackTrace->new() }
-a();
+a(1,"x");
 
 subtest 'message' => sub {
     my $event = $raven->_construct_message_event('mymessage', level => 'info');
@@ -99,7 +99,7 @@ subtest 'stacktrace' => sub {
             lineno   => 17,
             module   => 'main',
             vars     => {
-                args => '()'
+                '@_' => ['1','"x"'],
             },
         },
         {
@@ -109,7 +109,7 @@ subtest 'stacktrace' => sub {
             lineno   => 16,
             module   => 'main',
             vars     => {
-                args => '"Devel::StackTrace"'
+                '@_' => ['"Devel::StackTrace"'],
             },
         },
     ];
