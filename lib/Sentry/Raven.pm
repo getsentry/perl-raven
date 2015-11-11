@@ -90,11 +90,11 @@ Create a new sentry interface object.  It accepts the following named options:
 
 =over
 
-=item I<sentry_dsn =E<gt> C<'http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>'>>
+=item C<< sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' >>
 
 The DSN for your sentry service.  Get this from the client configuration page for your project.
 
-=item I<timeout =E<gt> 5>
+=item C<< timeout => 5 >>
 
 Do not wait longer than this number of seconds when attempting to send an event.
 
@@ -326,7 +326,7 @@ C<%exception_context> can contain:
 
 =over
 
-=item I<type =E<gt> $type>
+=item C<< type => $type >>
 
 =back
 
@@ -353,17 +353,17 @@ C<%request_context> can contain:
 
 =over
 
-=item I<method =E<gt> 'GET'>
+=item C<< method => 'GET' >>
 
-=item I<data =E<gt> 'foo=bar'>
+=item C<< data => 'foo=bar' >>
 
-=item I<query_string =E<gt> 'foo=bar'>
+=item C<< query_string => 'foo=bar' >>
 
-=item I<cookies =E<gt> 'foo=bar'>
+=item C<< cookies => 'foo=bar' >>
 
-=item I<headers =E<gt> { 'Content-Type' =E<gt> 'text/html' }>
+=item C<< headers => { 'Content-Type' => 'text/html' } >>
 
-=item I<C<env> =E<gt> { REMOTE_ADDR =E<gt> '192.168.0.1' }>
+=item C<< env => { REMOTE_ADDR => '192.168.0.1' } >>
 
 =back
 
@@ -408,27 +408,27 @@ The first frame should be the oldest frame.  Frames must contain at least one of
 
 =over
 
-=item I<filename =E<gt> $file_name>
+=item C<< filename => $file_name >>
 
-=item I<function =E<gt> $function_name>
+=item C<< function => $function_name >>
 
-=item I<module =E<gt> $module_name>
+=item C<< module => $module_name >>
 
-=item I<C<lineno> =E<gt> $line_number>
+=item C<< lineno => $line_number >>
 
-=item I<C<colno> =E<gt> $column_number>
+=item C<< colno => $column_number >>
 
-=item I<abs_path =E<gt> $absolute_path_file_name>
+=item C<< abs_path => $absolute_path_file_name >>
 
-=item I<context_line =E<gt> $line_of_code>
+=item C<< context_line => $line_of_code >>
 
-=item I<pre_context =E<gt> [ $previous_line1, $previous_line2 ]>
+=item C<< pre_context => [ $previous_line1, $previous_line2 ] >>
 
-=item I<post_context =E<gt> [ $next_line1, $next_line2 ]>
+=item C<< post_context => [ $next_line1, $next_line2 ] >>
 
-=item I<in_app =E<gt> $one_if_not_external_library>
+=item C<< in_app => $one_if_not_external_library >>
 
-=item I<vars =E<gt> { $variable_name =E<gt> $variable_value }>
+=item C<< vars => { $variable_name => $variable_value } >>
 
 =back
 
@@ -456,11 +456,11 @@ C<%user_context> can contain:
 
 =over
 
-=item I<id =E<gt> $unique_id'>
+=item C<< id => $unique_id' >>
 
-=item I<username =E<gt> $username'>
+=item C<< username => $username' >>
 
-=item I<email =E<gt> $email'>
+=item C<< email => $email' >>
 
 =back
 
@@ -488,7 +488,7 @@ C<%query_context> can contain:
 
 =over
 
-=item I<engine =E<gt> $engine'>
+=item C<< engine => $engine' >>
 
 =back
 
@@ -826,43 +826,43 @@ These options can be passed to all methods accepting %context.  Passing context 
 
 =over
 
-=item I<culprit =E<gt> 'Some::Software'>
+=item C<< culprit => 'Some::Software' >>
 
 The source of the event.  Defaults to C<undef>.
 
-=item I<event_id =E<gt> C<'534188f7c1ff4ff280c2e1206c9e0548'>>
+=item C<< event_id => '534188f7c1ff4ff280c2e1206c9e0548' >>
 
 The unique identifier string for an event, usually UUID v4.  Max 32 characters.  Defaults to a new unique UUID for each event.  Invalid ids may be discarded silently.
 
-=item I<extra =E<gt> { key1 =E<gt> 'val1', ... }>
+=item C<< extra => { key1 => 'val1', ... } >>
 
 Arbitrary key value pairs with extra information about an event.  Defaults to C<{}>.
 
-=item I<level =E<gt> 'error'>
+=item C<< level => 'error' >>
 
 Event level of an event.  Acceptable values are C<fatal>, C<error>, C<warning>, C<info>, and C<debug>.  Defaults to C<error>.
 
-=item I<logger =E<gt> 'root'>
+=item C<< logger => 'root' >>
 
 The creator of an event.  Defaults to 'root'.
 
-=item I<platform =E<gt> 'perl'>
+=item C<< platform => 'perl' >>
 
 The platform (language) in which an event occurred.  Defaults to C<perl>.
 
-=item I<processors =E<gt> [ Sentry::Raven::Processor::RemoveStackVariables, ... ]>
+=item C<< processors => [ Sentry::Raven::Processor::RemoveStackVariables, ... ] >>
 
 A set or processors to be applied to events before they are posted.  See L<Sentry::Raven::Processor> for more information.  This can only be set during construction and not on other methods accepting %context.
 
-=item I<server_name =E<gt> 'localhost.example.com'>
+=item C<< server_name => 'localhost.example.com' >>
 
 The hostname on which an event occurred.  Defaults to the system hostname.
 
-=item I<tags =E<gt> { key1 =E<gt> 'val1, ... }>
+=item C<< tags => { key1 => 'val1, ... } >>
 
 Arbitrary key value pairs with tags for categorizing an event.  Defaults to C<{}>.
 
-=item I<timestamp =E<gt> '1970-01-01T00:00:00'>
+=item C<< timestamp => '1970-01-01T00:00:00' >>
 
 Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid values may be discarded silently.
 
@@ -872,7 +872,7 @@ Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid
 
 =over
 
-=item SENTRY_DSN=C<http://<publickeyE<gt>:<secretkeyE<gt>@app.getsentry.com/<projectidE<gt>>
+=item SENTRY_DSN=C<< http://<publickey>:<secretkey>@app.getsentry.com/<projectid> >>
 
 A default DSN to be used if sentry_dsn is not passed to c<new>.
 
