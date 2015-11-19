@@ -43,12 +43,12 @@ WriteMakefile1(
             url     => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec',
         },
 
-        homepage    => 'https://github.com/rentrak/perl-raven',
+        homepage    => 'https://github.com/getsentry/perl-raven',
         resources   => {
             repository => {
                 type => 'git',
-                url  => 'git@github.com:rentrak/perl-raven.git',
-                web  => 'https://github.com/rentrak/perl-raven',
+                url  => 'git@github.com:getsentry/perl-raven.git',
+                web  => 'https://github.com/getsentry/perl-raven',
             },
         },
     },

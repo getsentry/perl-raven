@@ -6,7 +6,7 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 use Data::Dump 'dump';
 use DateTime;
