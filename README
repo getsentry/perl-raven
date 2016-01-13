@@ -1,4 +1,4 @@
-Sentry::Raven version 1.01
+Sentry::Raven version 1.02
 
 Sentry::Raven is a module for sending events to a sentry service.
 
