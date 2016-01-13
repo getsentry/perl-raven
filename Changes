@@ -1,5 +1,6 @@
-1.02 2015-11-18
+1.02 2016-01-12
  - Move project to getsentry github repo
+ - Change parameter reporting (thanks dakkar)
 
 1.01 2015-08-20
  - Clean up encoding error in Sentry
