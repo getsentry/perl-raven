@@ -194,7 +194,8 @@ around BUILDARGS => sub {
     my $timeout = delete($args{timeout});
     my $ua_obj = delete($args{ua_obj});
     my $processors = delete($args{processors}) || [];
-
+    my $encoding = delete($args{encoding});
+    
     return $class->$orig(
         post_url   => $post_url,
         public_key => $public_key,
@@ -202,6 +203,7 @@ around BUILDARGS => sub {
         context    => \%args,
         processors => $processors,
 
+        (defined($encoding) ? (encoding => $encoding) : ()),
         (defined($timeout) ? (timeout => $timeout) : ()),
         (defined($ua_obj) ? (ua_obj => $ua_obj) : ()),
     );
