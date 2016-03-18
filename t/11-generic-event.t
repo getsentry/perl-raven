@@ -13,6 +13,11 @@ local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new();
 
 subtest 'defaults' => sub {
+
+    is($raven->encoding, 'gzip');
+    is($raven->encoding('base64'), 'base64');
+    is($raven->encoding, 'base64');
+
     my $event = $raven->_construct_event();
 
     is($event->{level}, 'error');
@@ -36,6 +41,7 @@ subtest 'modifying defaults' => sub {
         platform    => 'myplatform',
         culprit     => 'myculprit',
         message     => 'mymessage',
+        encoding    => 'base64',
 
         extra       => {
             key1    => 'value1',
@@ -50,6 +56,8 @@ subtest 'modifying defaults' => sub {
         timestamp   => 'mytimestamp',
         server_name => 'myservername',
     );
+
+    is($raven->encoding, 'base64');
 
     my $event = $raven->_construct_event();
 
