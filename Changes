@@ -1,3 +1,6 @@
+1.03 2016-04-15
+ - Regain ability to set encoding (thanks Stuart Skelton)
+
 1.02 2016-01-12
  - Move project to getsentry github repo
  - Change parameter reporting (thanks dakkar)
