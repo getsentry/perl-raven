@@ -111,7 +111,7 @@ has [qw/ post_url public_key secret_key /] => (
 has sentry_version => (
     is      => 'ro',
     isa     => Int,
-    default => 3,
+    default => 7,
 );
 
 has timeout => (
@@ -581,6 +581,7 @@ sub _construct_event {
 
         extra       => $self->_merge_hashrefs($self->context()->{extra}, $context{extra}),
         tags        => $self->_merge_hashrefs($self->context()->{tags}, $context{tags}),
+        fingerprint => $context{fingerprint} || $self->context()->{fingerprint} || ['{{ default }}'],
 
         level       => $self->_validate_level($context{level}) || $self->context()->{level} || 'error',
     };
@@ -863,6 +864,12 @@ The hostname on which an event occurred.  Defaults to the system hostname.
 =item C<< tags => { key1 => 'val1, ... } >>
 
 Arbitrary key value pairs with tags for categorizing an event.  Defaults to C<{}>.
+
+=item C<< fingerprint => [ 'val1', 'val2', ... } >>
+
+Array of strings used to control grouping of events into rollups. The string C<'{{ default }}'> has special meaning when
+used as the first value; it indicates subsequent values should be appended to Sentry's default fingerprint (useful for
+splitting a rollup into multiple ones). Defaults to C<['{{ default }}']>.
 
 =item C<< timestamp => '1970-01-01T00:00:00' >>
 
