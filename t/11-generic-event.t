@@ -28,6 +28,7 @@ subtest 'defaults' => sub {
 
     is_deeply($event->{extra}, {});
     is_deeply($event->{tags}, {});
+    is_deeply($event->{fingerprint}, ['{{ default }}']);
 
     ok(string_to_uuid($event->{event_id}));
     like($event->{timestamp}, qr/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d$/);
@@ -51,6 +52,10 @@ subtest 'modifying defaults' => sub {
             tag1    => 'value1',
             tag2    => 'value2',
         },
+        fingerprint => [
+            'new',
+            'fingerprint',
+        ],
 
         event_id    => 'myeventid',
         timestamp   => 'mytimestamp',
@@ -81,6 +86,14 @@ subtest 'modifying defaults' => sub {
             tag1    => 'value1',
             tag2    => 'value2',
         },
+    );
+
+    is_deeply(
+        $event->{fingerprint},
+        [
+            'new',
+            'fingerprint',
+        ],
     );
 
     is($event->{event_id}, 'myeventid');
@@ -155,6 +168,10 @@ subtest 'overriding defaults' => sub {
             tag1    => 'value1',
             tag2    => 'value2',
         },
+        fingerprint => [
+            'new',
+            'fingerprint',
+        ],
 
         event_id    => 'myeventid',
         timestamp   => 'mytimestamp',
@@ -183,6 +200,14 @@ subtest 'overriding defaults' => sub {
         },
     );
 
+    is_deeply(
+        $event->{fingerprint},
+        [
+            'new',
+            'fingerprint',
+        ],
+    );
+
     is($event->{event_id}, 'myeventid');
     is($event->{timestamp}, 'mytimestamp');
     is($event->{server_name}, 'myservername');
@@ -197,6 +222,9 @@ subtest 'overriding modified defaults' => sub {
         tags        => {
             tag1    => 'value1',
         },
+        fingerprint => [
+            'value1',
+        ],
     );
 
     my $event = $raven->_construct_event(
@@ -208,6 +236,9 @@ subtest 'overriding modified defaults' => sub {
         tags        => {
             tag2    => 'value2',
         },
+        fingerprint => [
+            'value2',
+        ],
     );
 
     is($event->{level}, 'fatal');
@@ -226,6 +257,13 @@ subtest 'overriding modified defaults' => sub {
             tag1    => 'value1',
             tag2    => 'value2',
         },
+    );
+
+    is_deeply(
+        $event->{fingerprint},
+        [
+            'value2',
+        ],
     );
 };
 
