@@ -867,9 +867,7 @@ Arbitrary key value pairs with tags for categorizing an event.  Defaults to C<{}
 
 =item C<< fingerprint => [ 'val1', 'val2', ... } >>
 
-Array of strings used to control grouping of events into rollups. The string C<'{{ default }}'> has special meaning when
-used as the first value; it indicates subsequent values should be appended to Sentry's default fingerprint (useful for
-splitting a rollup into multiple ones). Defaults to C<['{{ default }}']>.
+Array of strings used to control how events aggregate in the sentry web interface. The string C<'{{ default }}'> has special meaning when used as the first value; it indicates that sentry should use the default aggregation method in addition to any others specified (useful for fine-grained aggregation). Defaults to C<['{{ default }}']>.
 
 =item C<< timestamp => '1970-01-01T00:00:00' >>
 
