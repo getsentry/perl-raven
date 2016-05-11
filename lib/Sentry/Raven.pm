@@ -252,7 +252,7 @@ sub capture_errors {
             ? $self->stacktrace_context(
                 $self->_get_frames_from_devel_stacktrace(
                     $stacktrace,
-                    2, # ignore 2 frames: Devel::StackTrace->new, $SIG{__DIE__}->()
+                    1, # ignore 1 frame: $SIG{__DIE__}->()
                 ),
             )
             : ();
@@ -294,6 +294,14 @@ sub _get_frames_from_devel_stacktrace {
             },
         }
     } $stacktrace->frames();
+
+    # Devel::Stacktrace::Frame's subroutine() and args() describe what's being called by the current frame,
+    # whereas Sentry expects function and vars to describe the current frame.
+    for my $i (0..$#frames) {
+        my $frame = $frames[$i];
+        my $parent = $frames[$i + 1] // {};
+        @$frame{'function', 'vars'} = @$parent{'function', 'vars'};
+    }
 
     shift(@frames) while ($ignore_num_frames--);
 

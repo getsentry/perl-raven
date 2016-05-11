@@ -55,13 +55,13 @@ subtest 'exception' => sub {
 subtest 'stacktrace' => sub {
     my @frames = @{ $event->{'sentry.interfaces.Stacktrace'}->{frames} };
 
-    is(scalar(@frames), 6);
+    is(scalar(@frames), 7);
 
     is($frames[-1]->{function}, 'main::c');
     is($frames[-1]->{module}, 'main');
     is($frames[-1]->{abs_path}, File::Spec->catfile('t', '15-error-handler.t'));
     is($frames[-1]->{filename}, '15-error-handler.t');
-    is($frames[-1]->{lineno}, 33);
+    is($frames[-1]->{lineno}, 34);
 };
 
 subtest 'dies when unable to submit event' => sub {

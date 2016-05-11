@@ -95,21 +95,19 @@ subtest 'stacktrace' => sub {
         {
             abs_path => File::Spec->catfile('t', '12-specialized-event.t'),
             filename => '12-specialized-event.t',
-            function => 'main::a',
+            function => undef,
             lineno   => 17,
             module   => 'main',
-            vars     => {
-                '@_' => ['1','"x"'],
-            },
+            vars     => undef
         },
         {
             abs_path => File::Spec->catfile('t', '12-specialized-event.t'),
             filename => '12-specialized-event.t',
-            function => 'Devel::StackTrace::new',
+            function => 'main::a',
             lineno   => 16,
             module   => 'main',
             vars     => {
-                '@_' => ['"Devel::StackTrace"'],
+                '@_' => ['1','"x"'],
             },
         },
     ];
