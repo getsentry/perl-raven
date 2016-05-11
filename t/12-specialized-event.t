@@ -116,11 +116,6 @@ subtest 'stacktrace' => sub {
         $raven->_construct_stacktrace_event($trace)->{'sentry.interfaces.Stacktrace'},
         { frames => $frames },
     );
-
-    is_deeply(
-        $raven->_get_frames_from_devel_stacktrace($trace, 1),
-        [ $frames->[0] ],
-    );
 };
 
 subtest 'user' => sub {

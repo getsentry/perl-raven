@@ -233,7 +233,7 @@ sub capture_errors {
 
     my ($stacktrace, @retval);
     eval {
-        local $SIG{__DIE__} = sub { $stacktrace = Devel::StackTrace->new() };
+        local $SIG{__DIE__} = sub { $stacktrace = Devel::StackTrace->new(skip_frames => 1) };
 
         if ($wantarray) {
             @retval = $subref->();
@@ -250,10 +250,7 @@ sub capture_errors {
 
         my %stacktrace_context = $stacktrace
             ? $self->stacktrace_context(
-                $self->_get_frames_from_devel_stacktrace(
-                    $stacktrace,
-                    1, # ignore 1 frame: $SIG{__DIE__}->()
-                ),
+                $self->_get_frames_from_devel_stacktrace($stacktrace),
             )
             : ();
 
@@ -275,9 +272,7 @@ sub capture_errors {
 };
 
 sub _get_frames_from_devel_stacktrace {
-    my ($self, $stacktrace, $ignore_num_frames) = @_;
-
-    $ignore_num_frames ||= 0;
+    my ($self, $stacktrace) = @_;
 
     my @frames = map {
         my $frame = $_;
@@ -302,8 +297,6 @@ sub _get_frames_from_devel_stacktrace {
         my $parent = $frames[$i + 1] // {};
         @$frame{'function', 'vars'} = @$parent{'function', 'vars'};
     }
-
-    shift(@frames) while ($ignore_num_frames--);
 
     return [ reverse(@frames) ];
 }
