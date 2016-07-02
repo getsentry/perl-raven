@@ -4,7 +4,7 @@ use 5.008;
 use strict;
 use warnings;
 use Moo;
-use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
+use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str Maybe /;
 
 our $VERSION = '1.05';
 
@@ -98,6 +98,10 @@ The DSN for your sentry service.  Get this from the client configuration page fo
 
 Do not wait longer than this number of seconds when attempting to send an event.
 
+=item C<< release => 'ec899ea' >>
+
+Track the version of your application in Sentry.
+
 =back
 
 =cut
@@ -166,6 +170,11 @@ has encoding => (
     default => 'gzip',
 );
 
+has release => (
+    is      => 'ro',
+    isa     => Maybe[Str],
+);
+
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
 
@@ -195,13 +204,15 @@ around BUILDARGS => sub {
     my $ua_obj = delete($args{ua_obj});
     my $processors = delete($args{processors}) || [];
     my $encoding = delete($args{encoding});
-    
+    my $release = delete($args{release});
+
     return $class->$orig(
         post_url   => $post_url,
         public_key => $public_key,
         secret_key => $secret_key,
         context    => \%args,
         processors => $processors,
+        release    => $release,
 
         (defined($encoding) ? (encoding => $encoding) : ()),
         (defined($timeout) ? (timeout => $timeout) : ()),
@@ -576,6 +587,7 @@ sub _construct_event {
         logger      => $context{logger}      || $self->context()->{logger}      || 'root',
         server_name => $context{server_name} || $self->context()->{server_name} || hostname(),
         platform    => $context{platform}    || $self->context()->{platform}    || 'perl',
+        release     => $self->release,
 
         message     => $context{message}     || $self->context()->{message},
         culprit     => $context{culprit}     || $self->context()->{culprit},

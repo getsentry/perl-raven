@@ -25,6 +25,7 @@ subtest 'defaults' => sub {
     is($event->{platform}, 'perl');
     is($event->{culprit}, undef);
     is($event->{message}, undef);
+    is($event->{release}, undef);
 
     is_deeply($event->{extra}, {});
     is_deeply($event->{tags}, {});
@@ -43,6 +44,7 @@ subtest 'modifying defaults' => sub {
         culprit     => 'myculprit',
         message     => 'mymessage',
         encoding    => 'base64',
+        release     => 'ec899ea',
 
         extra       => {
             key1    => 'value1',
@@ -71,6 +73,7 @@ subtest 'modifying defaults' => sub {
     is($event->{platform}, 'myplatform');
     is($event->{culprit}, 'myculprit');
     is($event->{message}, 'mymessage');
+    is($event->{release}, 'ec899ea');
 
     is_deeply(
         $event->{extra},
