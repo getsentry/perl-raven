@@ -1,3 +1,6 @@
+1.06 2016-07-06
+ - Adding release context parameter (thanks Slobodan Mišković)
+
 1.05 2016-05-25
  - Fixing stack frame context (thanks Steve Wooster)
 

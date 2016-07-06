@@ -1,4 +1,4 @@
-Sentry::Raven version 1.05
+Sentry::Raven version 1.06
 
 Sentry::Raven is a module for sending events to a sentry service.
 
@@ -23,6 +23,6 @@ Perl 5.8 or later.
 
 COPYRIGHT AND LICENSE
 
-Copyright (C) 2014 by Rentrak Corporation
+Copyright (C) 2016 by comScore, Inc
 
 The full text of this license can be found in the LICENSE file included with this module.

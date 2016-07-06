@@ -6,7 +6,7 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 use Data::Dump 'dump';
 use DateTime;
@@ -195,7 +195,7 @@ around BUILDARGS => sub {
     my $ua_obj = delete($args{ua_obj});
     my $processors = delete($args{processors}) || [];
     my $encoding = delete($args{encoding});
-    
+
     return $class->$orig(
         post_url   => $post_url,
         public_key => $public_key,
@@ -577,6 +577,8 @@ sub _construct_event {
         server_name => $context{server_name} || $self->context()->{server_name} || hostname(),
         platform    => $context{platform}    || $self->context()->{platform}    || 'perl',
 
+        release     => $context{release}     || $self->context()->{release},
+
         message     => $context{message}     || $self->context()->{message},
         culprit     => $context{culprit}     || $self->context()->{culprit},
 
@@ -853,6 +855,10 @@ The creator of an event.  Defaults to 'root'.
 =item C<< platform => 'perl' >>
 
 The platform (language) in which an event occurred.  Defaults to C<perl>.
+
+=item C<< release => 'ec899ea' >>
+
+Track the release version of your application.
 
 =item C<< processors => [ Sentry::Raven::Processor::RemoveStackVariables, ... ] >>
 
