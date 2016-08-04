@@ -587,7 +587,7 @@ sub _construct_event {
         fingerprint     => $context{fingerprint} || $self->context()->{fingerprint} || ['{{ default }}'],
 
         level           => $self->_validate_level($context{level}) || $self->context()->{level} || 'error',
-        environment     => $context{environment} || $self->context()->{environment},
+        environment     => $context{environment} || $self->context()->{environment} || $ENV{SENTRY_ENVIRONMENT},
     };
 
     $event->{message} = _trim($event->{message}, MAX_MESSAGE);
