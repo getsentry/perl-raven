@@ -881,6 +881,11 @@ Array of strings used to control how events aggregate in the sentry web interfac
 
 Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid values may be discarded silently.
 
+=item C<< environment => 'production' >>
+
+Specify the environment (i.e. I<staging>, I<production>, etc.) that your project is deployed in. More information 
+can be found on the L<Sentry website|https://blog.getsentry.com/2016/07/22/environment-details.html>.
+
 =back
 
 =head1 CONFIGURATION AND ENVIRONMENT
