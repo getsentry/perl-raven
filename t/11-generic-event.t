@@ -76,7 +76,7 @@ subtest 'modifying defaults' => sub {
     is($event->{culprit}, 'myculprit');
     is($event->{message}, 'mymessage');
     is($event->{release}, 'ec899ea');
-    is($event->{release}, 'testing');
+    is($event->{environment}, 'testing');
 
     is_deeply(
         $event->{extra},
