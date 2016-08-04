@@ -571,22 +571,23 @@ sub _construct_event {
     my ($self, %context) = @_;
 
     my $event = {
-        event_id    => $context{event_id}    || $self->context()->{event_id}    || _generate_id(),
-        timestamp   => $context{timestamp}   || $self->context()->{timestamp}   || DateTime->now()->iso8601(),
-        logger      => $context{logger}      || $self->context()->{logger}      || 'root',
-        server_name => $context{server_name} || $self->context()->{server_name} || hostname(),
-        platform    => $context{platform}    || $self->context()->{platform}    || 'perl',
+        event_id        => $context{event_id}    || $self->context()->{event_id}    || _generate_id(),
+        timestamp       => $context{timestamp}   || $self->context()->{timestamp}   || DateTime->now()->iso8601(),
+        logger          => $context{logger}      || $self->context()->{logger}      || 'root',
+        server_name     => $context{server_name} || $self->context()->{server_name} || hostname(),
+        platform        => $context{platform}    || $self->context()->{platform}    || 'perl',
 
-        release     => $context{release}     || $self->context()->{release},
+        release         => $context{release}     || $self->context()->{release},
 
-        message     => $context{message}     || $self->context()->{message},
-        culprit     => $context{culprit}     || $self->context()->{culprit},
+        message         => $context{message}     || $self->context()->{message},
+        culprit         => $context{culprit}     || $self->context()->{culprit},
 
-        extra       => $self->_merge_hashrefs($self->context()->{extra}, $context{extra}),
-        tags        => $self->_merge_hashrefs($self->context()->{tags}, $context{tags}),
-        fingerprint => $context{fingerprint} || $self->context()->{fingerprint} || ['{{ default }}'],
+        extra           => $self->_merge_hashrefs($self->context()->{extra}, $context{extra}),
+        tags            => $self->_merge_hashrefs($self->context()->{tags}, $context{tags}),
+        fingerprint     => $context{fingerprint} || $self->context()->{fingerprint} || ['{{ default }}'],
 
-        level       => $self->_validate_level($context{level}) || $self->context()->{level} || 'error',
+        level           => $self->_validate_level($context{level}) || $self->context()->{level} || 'error',
+        environment     => $context{environment} || $self->context()->{environment},
     };
 
     $event->{message} = _trim($event->{message}, MAX_MESSAGE);
