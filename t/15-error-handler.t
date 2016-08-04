@@ -81,7 +81,7 @@ subtest 'dies when unable to submit event' => sub {
     my $eval_error = $EVAL_ERROR;
 
     like($eval_error, qr/failed to submit event to sentry service/);
-    like($eval_error, qr/"level" => "error"/);
+    like($eval_error, qr/"level"\s*=>\s*"error"/);
 };
 
 subtest 'warn when unable to capture message' => sub{
