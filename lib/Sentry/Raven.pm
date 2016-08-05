@@ -294,7 +294,9 @@ sub _get_frames_from_devel_stacktrace {
     # whereas Sentry expects function and vars to describe the current frame.
     for my $i (0..$#frames) {
         my $frame = $frames[$i];
-        my $parent = $frames[$i + 1] // {};
+        my $parent = defined($frames[$i + 1])
+            ? $frames[$i + 1]
+            : {};
         @$frame{'function', 'vars'} = @$parent{'function', 'vars'};
     }
 
