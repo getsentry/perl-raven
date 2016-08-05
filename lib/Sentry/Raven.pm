@@ -6,7 +6,7 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '1.07';
+our $VERSION = '1.08';
 
 use Data::Dump 'dump';
 use DateTime;
@@ -294,7 +294,9 @@ sub _get_frames_from_devel_stacktrace {
     # whereas Sentry expects function and vars to describe the current frame.
     for my $i (0..$#frames) {
         my $frame = $frames[$i];
-        my $parent = $frames[$i + 1] // {};
+        my $parent = defined($frames[$i + 1])
+            ? $frames[$i + 1]
+            : {};
         @$frame{'function', 'vars'} = @$parent{'function', 'vars'};
     }
 

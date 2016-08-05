@@ -1,3 +1,6 @@
+1.08 2016-08-05
+ - Fixing perl 5.8 compatibility
+
 1.07 2016-08-04
  - Adding environment context parameter (thanks William Travis Holton)
 
