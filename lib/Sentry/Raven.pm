@@ -58,7 +58,7 @@ Sentry::Raven - A perl sentry client
 
 =head1 VERSION
 
-Version 1.00
+Version 1.08
 
 =head1 SYNOPSIS
 
