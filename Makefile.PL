@@ -10,7 +10,6 @@ WriteMakefile1(
 
     PREREQ_PM           => {
         'Data::Dump'                   => 0,
-        'DateTime'                     => 0,
         'Devel::StackTrace'            => 0,
         'English'                      => 0,
         'File::Basename'               => 0,
@@ -22,6 +21,7 @@ WriteMakefile1(
         'Moo'                          => 0,
         'MooX::Types::MooseLike::Base' => 0,
         'Sys::Hostname'                => 0,
+        'Time::Piece'                  => 0,
         'URI'                          => 0,
         'UUID::Tiny'                   => 0,
     },
