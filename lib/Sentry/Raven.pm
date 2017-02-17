@@ -27,7 +27,7 @@ use constant {
     MAX_MESSAGE               => 2048,
 
     MAX_EXCEPTION_TYPE        =>  128,
-    MAX_EXCEPTION_VALUE       =>  256,
+    MAX_EXCEPTION_VALUE       => 4096,
 
     MAX_HTTP_QUERY_STRING     => 1024,
     MAX_HTTP_DATA             => 2048,
