@@ -9,7 +9,6 @@ use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 our $VERSION = '1.08';
 
 use Data::Dump 'dump';
-use DateTime;
 use Devel::StackTrace;
 use English '-no_match_vars';
 use File::Basename 'basename';
@@ -18,6 +17,7 @@ use HTTP::Status ':constants';
 use JSON::XS;
 use LWP::UserAgent;
 use Sys::Hostname;
+use Time::Piece;
 use URI;
 use UUID::Tiny ':std';
 
@@ -574,7 +574,7 @@ sub _construct_event {
 
     my $event = {
         event_id        => $context{event_id}    || $self->context()->{event_id}    || _generate_id(),
-        timestamp       => $context{timestamp}   || $self->context()->{timestamp}   || DateTime->now()->iso8601(),
+        timestamp       => $context{timestamp}   || $self->context()->{timestamp}   || gmtime->datetime(),
         logger          => $context{logger}      || $self->context()->{logger}      || 'root',
         server_name     => $context{server_name} || $self->context()->{server_name} || hostname(),
         platform        => $context{platform}    || $self->context()->{platform}    || 'perl',
