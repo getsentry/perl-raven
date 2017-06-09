@@ -462,13 +462,13 @@ C<%user_context> can contain:
 
 =over
 
-=item C<< id => $unique_id' >>
+=item C<< id => $unique_id >>
 
-=item C<< username => $username' >>
+=item C<< username => $username >>
 
-=item C<< email => $email' >>
+=item C<< email => $email >>
 
-=item C<< ip_address => $ip_address' >>
+=item C<< ip_address => $ip_address >>
 
 =back
 
