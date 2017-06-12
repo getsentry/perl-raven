@@ -119,17 +119,23 @@ subtest 'stacktrace' => sub {
 };
 
 subtest 'user' => sub {
-    my $event = $raven->_construct_user_event( id => 'myid', username => 'myusername', email => 'my@email.com', level => 'info');
+    my $event = $raven->_construct_user_event(id => 'myid', username => 'myusername', email => 'my@email.com', ip_address => '192.168.0.1', level => 'info');
 
     is($event->{level}, 'info');
     is_deeply(
         $event->{'sentry.interfaces.User'},
         {
-            id       => 'myid',
-            username => 'myusername',
-            email    => 'my@email.com',
+            id            => 'myid',
+            username      => 'myusername',
+            email         => 'my@email.com',
+            ip_address    => '192.168.0.1',
         },
     );
+};
+
+subtest 'user_context arbitray data' => sub {
+    my $event = {$raven->user_context(arbitrary_key => 'arbitrary value')};
+    is($event->{'sentry.interfaces.User'}{arbitrary_key}, 'arbitrary value');
 };
 
 subtest 'query' => sub {

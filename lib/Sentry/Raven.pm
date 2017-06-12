@@ -42,6 +42,7 @@ use constant {
     MAX_USER_EMAIL            =>  128,
     MAX_USER_ID               =>  128,
     MAX_USER_USERNAME         =>  128,
+    MAX_USER_IP_ADDRESS       =>   45, # RFC 4291, section 2.2.3
 };
 
 # self-imposed constants
@@ -461,11 +462,13 @@ C<%user_context> can contain:
 
 =over
 
-=item C<< id => $unique_id' >>
+=item C<< id => $unique_id >>
 
-=item C<< username => $username' >>
+=item C<< username => $username >>
 
-=item C<< email => $email' >>
+=item C<< email => $email >>
+
+=item C<< ip_address => $ip_address >>
 
 =back
 
@@ -481,7 +484,9 @@ sub _construct_user_event {
 
     return $self->_construct_event(
         %context,
-        $self->user_context(%context),
+        $self->user_context(
+            map { $_ => $context{$_} } qw/email id username ip_address/
+        ),
     );
 };
 
@@ -718,12 +723,15 @@ sub stacktrace_context {
 
 sub user_context {
     my ($class, %user_context) = @_;
+    my ($email, $id, $username, $ip_address) = delete @user_context{qw/email id username ip_address/};
 
     return (
         'sentry.interfaces.User' => {
-            email    => _trim($user_context{email}, MAX_USER_EMAIL),
-            id       => _trim($user_context{id}, MAX_USER_ID),
-            username => _trim($user_context{username}, MAX_USER_USERNAME),
+            email      => _trim($email, MAX_USER_EMAIL),
+            id         => _trim($id, MAX_USER_ID),
+            username   => _trim($username, MAX_USER_USERNAME),
+            ip_address => _trim($ip_address, MAX_USER_IP_ADDRESS),
+            %user_context,
         }
     );
 };
