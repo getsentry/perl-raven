@@ -5,7 +5,7 @@ WriteMakefile1(
     ABSTRACT_FROM       => 'lib/Sentry/Raven.pm',
     VERSION_FROM        => 'lib/Sentry/Raven.pm',
     MIN_PERL_VERSION    => '5.008',
-    AUTHOR              => 'Rentrak Corporation',
+    AUTHOR              => 'Matt Harrington',
     LICENSE             => 'mit',
 
     PREREQ_PM           => {

@@ -63,7 +63,7 @@ Version 1.11
 
 =head1 SYNOPSIS
 
-  my $raven = Sentry::Raven->new( sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' );
+  my $raven = Sentry::Raven->new( sentry_dsn => 'https://<publickey>:<secretkey>@sentry.io/<projectid>' );
 
   # capture all errors
   $raven->capture_errors( sub {
@@ -91,7 +91,7 @@ Create a new sentry interface object.  It accepts the following named options:
 
 =over
 
-=item C<< sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' >>
+=item C<< sentry_dsn => 'http://<publickey>:<secretkey>@sentry.io/<projectid>' >>
 
 The DSN for your sentry service.  Get this from the client configuration page for your project.
 
@@ -894,7 +894,7 @@ Timestamp of an event.  ISO 8601 format.  Defaults to the current time.  Invalid
 =item C<< environment => 'production' >>
 
 Specify the environment (i.e. I<staging>, I<production>, etc.) that your project is deployed in. More information 
-can be found on the L<Sentry website|https://blog.getsentry.com/2016/07/22/environment-details.html>.
+can be found on the L<Sentry website|https://docs.sentry.io/enriching-error-data/environments/>.
 
 =back
 
@@ -902,7 +902,7 @@ can be found on the L<Sentry website|https://blog.getsentry.com/2016/07/22/envir
 
 =over
 
-=item SENTRY_DSN=C<< http://<publickey>:<secretkey>@app.getsentry.com/<projectid> >>
+=item SENTRY_DSN=C<< http://<publickey>:<secretkey>@sentry.io/<projectid> >>
 
 A default DSN to be used if sentry_dsn is not passed to c<new>.
 
@@ -910,7 +910,7 @@ A default DSN to be used if sentry_dsn is not passed to c<new>.
 
 =head1 LICENSE
 
-Copyright (C) 2014 by Rentrak Corporation
+Copyright (C) 2019 by Matt Harrington
 
 The full text of this license can be found in the LICENSE file included with this module.
 

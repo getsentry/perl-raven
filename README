@@ -5,7 +5,7 @@ Sentry::Raven is a module for sending events to a sentry service.
 SYNOPSIS
 
   use Sentry::Raven;
-  my $raven = Sentry::Raven->new(sentry_dsn => 'http://<publickey>:<secretkey>@app.getsentry.com/<projectid>' );
+  my $raven = Sentry::Raven->new(sentry_dsn => 'https://<publickey>:<secretkey>@sentry.io/<projectid>' );
   $raven->capture_message('The sky is falling');
 
 INSTALLATION
