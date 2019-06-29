@@ -6,7 +6,7 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base qw/ ArrayRef HashRef Int Str /;
 
-our $VERSION = '1.10';
+our $VERSION = '1.11';
 
 use Data::Dump 'dump';
 use Devel::StackTrace;
@@ -59,7 +59,7 @@ Sentry::Raven - A perl sentry client
 
 =head1 VERSION
 
-Version 1.10
+Version 1.11
 
 =head1 SYNOPSIS
 
