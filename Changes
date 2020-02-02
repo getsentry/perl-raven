@@ -1,3 +1,6 @@
+1.12 2020-02-02
+ - Sending messages fall back to interface contexts (thanks jrubinator)
+
 1.11 2019-06-29
  - Updating documentation
 
