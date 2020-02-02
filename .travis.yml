@@ -3,8 +3,6 @@ perl:
   - "5.30"
   - "5.26"
   - "5.24"
-  - "5.16"
-  - "5.10"
 
 install:
   - cpanm --quiet --notest ExtUtils::MakeMaker
