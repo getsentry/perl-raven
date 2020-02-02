@@ -285,4 +285,19 @@ subtest 'invalid context' => sub {
     is($warn_message, "unknown level: not-a-level\n");
 };
 
+subtest 'generic interfaces' => sub {
+    # request_context is probably a more real-world example of this
+    # but exception_context is conveniently easy to create
+    my %exception_context = Sentry::Raven->exception_context("error message");
+    $raven = Sentry::Raven->new( %exception_context );
+
+    my $event = $raven->_construct_event();
+
+    for my $exception_key ( keys %exception_context ) {
+        is_deeply $event->{ $exception_key },
+                  $exception_context{ $exception_key },
+                  "instance-level $exception_key appears in events";
+    }
+};
+
 done_testing();

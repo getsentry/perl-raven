@@ -600,9 +600,11 @@ sub _construct_event {
     $event->{message} = _trim($event->{message}, MAX_MESSAGE);
     $event->{culprit} = _trim($event->{culprit}, MAX_CULPRIT);
 
+    my $instance_ctx = $self->context();
     foreach my $interface (@{ $self->valid_interfaces() }) {
-        $event->{$interface} = $context{$interface}
-            if $context{$interface};
+        my $interface_ctx = $context{$interface} || $instance_ctx->{$interface};
+        $event->{$interface} = $interface_ctx
+            if $interface_ctx;
     }
 
     return $event;
