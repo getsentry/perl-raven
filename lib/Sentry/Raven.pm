@@ -170,7 +170,7 @@ has encoding => (
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
 
-    my $sentry_dsn = $ENV{SENTRY_DSN} || $args{sentry_dsn}
+    my $sentry_dsn = $args{sentry_dsn} || $ENV{SENTRY_DSN}
         or die "must pass sentry_dsn or set SENTRY_DSN envirionment variable\n";
 
     delete($args{sentry_dsn});
