@@ -20,6 +20,8 @@ use Sys::Hostname;
 use Time::Piece;
 use URI;
 use UUID::Tiny ':std';
+use File::Slurp;
+use List::Util qw(min max);
 
 # constants from server-side sentry code
 use constant {
@@ -288,6 +290,7 @@ sub _get_frames_from_devel_stacktrace {
                     map { _trim(dump($_), MAX_STACKTRACE_VARS) } $frame->args(),
                 ],
             },
+            $self->_get_lines_from_file($frame->filename(), $frame->line()),
         }
     } $stacktrace->frames();
 
@@ -302,6 +305,23 @@ sub _get_frames_from_devel_stacktrace {
     }
 
     return [ reverse(@frames) ];
+}
+
+sub _get_lines_from_file {
+  my ($self, $abs_path, $lineno) = @_;
+
+  my @lines = read_file($abs_path);
+  chomp(@lines);
+  
+  my $context_lines = 5;
+  my $lower_bound = max(0, $lineno - $context_lines);
+  my $upper_bound = min($lineno + $context_lines, scalar @lines);
+
+  return (
+    context_line  => $lines[ $lineno - 1 ],
+    pre_context   => [ @lines[ $lower_bound - 1 .. $lineno - 2 ]],
+    post_context  => [ @lines[ $lineno .. $upper_bound - 1 ]],
+  );
 }
 
 =head1 METHODS
