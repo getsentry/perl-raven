@@ -8,6 +8,7 @@ use Test::More;
 use File::Spec;
 use Sentry::Raven;
 use Devel::StackTrace;
+use File::Slurp;
 
 local $ENV{SENTRY_DSN} = 'http://key:secret@somewhere.com:9000/foo/123';
 my $raven = Sentry::Raven->new();
@@ -91,24 +92,33 @@ subtest 'stacktrace' => sub {
         { frames => $frames },
     );
 
+    my @file_lines = read_file(File::Spec->catfile('t', '12-specialized-event.t'));
+    chomp(@file_lines);
+
     $frames = [
         {
-            abs_path => File::Spec->catfile('t', '12-specialized-event.t'),
-            filename => '12-specialized-event.t',
-            function => undef,
-            lineno   => 17,
-            module   => 'main',
-            vars     => undef
+            abs_path     => File::Spec->catfile('t', '12-specialized-event.t'),
+            filename     => '12-specialized-event.t',
+            function     => undef,
+            lineno       => 18,
+            module       => 'main',
+            vars         => undef,
+            context_line => $file_lines[ 17 ],
+            pre_context  => [ @file_lines[ 12 .. 16 ] ],
+            post_context => [ @file_lines [ 18 .. 22 ] ],
         },
         {
             abs_path => File::Spec->catfile('t', '12-specialized-event.t'),
             filename => '12-specialized-event.t',
             function => 'main::a',
-            lineno   => 16,
+            lineno   => 17,
             module   => 'main',
             vars     => {
                 '@_' => ['1','"x"'],
             },
+            context_line => $file_lines[ 16 ],
+            pre_context  => [ @file_lines[ 11 .. 15 ] ],
+            post_context => [ @file_lines [ 17 .. 21 ] ],
         },
     ];
 
