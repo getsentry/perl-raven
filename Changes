@@ -1,3 +1,7 @@
+1.13 2020-06-08
+ - Fixing precidence of sentry dsn parameters (thanks Nowaker)
+ - Displays source code in sentry event (thanks dariuszpiwowarski)
+
 1.12 2020-02-02
  - Sending messages fall back to interface contexts (thanks jrubinator)
 
