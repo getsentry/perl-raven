@@ -310,8 +310,10 @@ sub _get_frames_from_devel_stacktrace {
 sub _get_lines_from_file {
   my ($self, $abs_path, $lineno) = @_;
 
-  my @lines = read_file($abs_path);
+  my @lines = eval { read_file($abs_path) };
   chomp(@lines);
+  return () unless @lines;
+  return () unless @lines >= $lineno;
   
   my $context_lines = 5;
   my $lower_bound = max(0, $lineno - $context_lines);
