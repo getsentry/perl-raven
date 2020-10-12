@@ -16,6 +16,7 @@ t/13-service-call.t
 t/14-does-not-die.t
 t/15-error-handler.t
 t/16-processors.t
+t/21-stacktrace-failures.t
 t/90-perl-critic.t
 t/91-pod-coverage.t
 t/92-pod-syntax.t
